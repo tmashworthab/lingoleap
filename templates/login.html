@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Log In — LingoLeap{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-violet-50 via-white to-pink-50 flex items-center justify-center py-12 px-4">
+  <div class="w-full max-w-md">
+
+    <div class="text-center mb-8">
+      <a href="{{ url_for('index') }}" class="text-5xl inline-block hover:scale-110 transition-transform">🦜</a>
+      <h1 class="text-3xl font-extrabold text-gray-900 mt-3">Welcome back!</h1>
+      <p class="text-gray-500 mt-1">Log in to continue your language journey</p>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-xl p-8">
+      <form action="{{ url_for('login') }}" method="post" class="space-y-5">
+
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1.5" for="identifier">
+            Username or Email
+          </label>
+          <input type="text" id="identifier" name="identifier" required autocomplete="username"
+                 placeholder="Your username or email"
+                 class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400">
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between mb-1.5">
+            <label class="text-sm font-semibold text-gray-700" for="password">Password</label>
+          </div>
+          <input type="password" id="password" name="password" required autocomplete="current-password"
+                 placeholder="Your password"
+                 class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400">
+        </div>
+
+        <button type="submit"
+                class="w-full bg-violet-600 hover:bg-violet-700 text-white font-extrabold py-3 rounded-xl text-base transition-colors shadow-lg">
+          Log in →
+        </button>
+      </form>
+
+      <div class="mt-6 text-center text-sm text-gray-500">
+        Don't have an account?
+        <a href="{{ url_for('signup') }}" class="text-violet-600 font-semibold hover:text-violet-800 transition-colors">
+          Sign up free
+        </a>
+      </div>
+    </div>
+
+    <div class="mt-6 bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800 text-center">
+      <strong>Demo tip:</strong> Create a free account to try everything out!
+    </div>
+
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Page Not Found — LingoLeap{% endblock %}
+{% block content %}
+<div class="min-h-screen flex items-center justify-center py-20 px-4 text-center">
+  <div>
+    <div class="text-8xl mb-6">🦜</div>
+    <h1 class="text-6xl font-black text-gray-900 mb-3">404</h1>
+    <p class="text-xl text-gray-500 mb-8">Oops! This page flew the nest.</p>
+    <a href="{{ url_for('index') }}"
+       class="bg-violet-600 hover:bg-violet-700 text-white font-bold px-8 py-3 rounded-full transition-colors">
+      Back to home
+    </a>
+  </div>
+</div>
+{% endblock %}

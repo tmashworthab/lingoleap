@@ -1,0 +1,254 @@
+{% extends "base.html" %}
+{% block title %}{{ course.title }} — LingoLeap{% endblock %}
+
+{% block content %}
+<!-- Header banner -->
+<div class="text-white py-12" style="background: linear-gradient(135deg, {{ course.color_from }}, {{ course.color_to }});">
+  <div class="max-w-5xl mx-auto px-4">
+    <div class="flex items-start gap-4">
+      <span class="text-6xl">{{ course.flag_emoji }}</span>
+      <div class="flex-1">
+        <div class="flex flex-wrap gap-2 mb-2">
+          {% if course.is_official %}
+          <span class="bg-white/20 backdrop-blur text-white text-xs font-bold px-3 py-1 rounded-full">⭐ Official Course</span>
+          {% else %}
+          <span class="bg-white/20 backdrop-blur text-white text-xs font-bold px-3 py-1 rounded-full">🌱 Community Course</span>
+          {% endif %}
+          <span class="bg-white/20 backdrop-blur text-white text-xs font-bold px-3 py-1 rounded-full capitalize">{{ course.difficulty }}</span>
+          <span class="bg-white/20 backdrop-blur text-white text-xs font-bold px-3 py-1 rounded-full capitalize">{{ course.category }}</span>
+        </div>
+        <h1 class="text-3xl md:text-4xl font-extrabold leading-tight mb-2">{{ course.title }}</h1>
+        <p class="text-white/80 text-lg max-w-2xl">{{ course.description }}</p>
+        <div class="flex flex-wrap gap-6 mt-4 text-sm text-white/70">
+          <span>📚 <strong class="text-white">{{ course.item_count }}</strong> vocabulary items</span>
+          <span>👥 <strong class="text-white">{{ "{:,}".format(course.enrollment_count) }}</strong> learners enrolled</span>
+          {% if not course.is_official and course.creator_name %}
+          <span>✍️ by
+            <strong class="text-white">{{ course.creator_name }}</strong>
+          </span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="max-w-5xl mx-auto px-4 py-10">
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+    <!-- LEFT: main content -->
+    <div class="lg:col-span-2 space-y-8">
+
+      <!-- Vocab Preview -->
+      <div class="bg-white rounded-2xl shadow p-6">
+        <h2 class="text-xl font-extrabold text-gray-900 mb-4 flex items-center gap-2">
+          <span>📖</span> Preview vocabulary
+        </h2>
+        {% if vocab_preview %}
+        <div class="space-y-3">
+          {% for item in vocab_preview %}
+          <div class="flex items-center gap-4 p-3 bg-gray-50 rounded-xl hover:bg-violet-50 transition-colors">
+            <div class="w-8 h-8 bg-violet-100 text-violet-700 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0">
+              {{ loop.index }}
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="font-semibold text-gray-900">{{ item.word }}</div>
+              <div class="text-gray-500 text-sm">{{ item.translation }}</div>
+              {% if item.pronunciation %}
+              <div class="text-violet-400 text-xs italic">/{{ item.pronunciation }}/</div>
+              {% endif %}
+            </div>
+            {% if item.example_sentence %}
+            <div class="text-gray-400 text-xs italic hidden md:block max-w-xs truncate">"{{ item.example_sentence }}"</div>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+        {% if course.item_count > 5 %}
+        <p class="text-gray-400 text-sm mt-4 text-center">
+          + {{ course.item_count - 5 }} more items. Enroll to see them all!
+        </p>
+        {% endif %}
+        {% else %}
+        <p class="text-gray-400 text-sm">No vocabulary items yet.</p>
+        {% endif %}
+      </div>
+
+      <!-- Reviews -->
+      <div class="bg-white rounded-2xl shadow p-6">
+        <h2 class="text-xl font-extrabold text-gray-900 mb-4 flex items-center gap-2">
+          <span>💬</span> Community ratings
+        </h2>
+        <!-- Rating summary -->
+        <div class="flex items-center gap-6 mb-6 p-4 bg-amber-50 rounded-xl">
+          <div class="text-center">
+            <div class="text-5xl font-black text-amber-500">{{ rating_info.avg or '—' }}</div>
+            <div class="flex gap-0.5 justify-center mt-1">
+              {% for i in range(1, 6) %}
+              <span class="text-xl {% if rating_info.avg and i <= rating_info.avg|int %}text-amber-400{% else %}text-gray-200{% endif %}">★</span>
+              {% endfor %}
+            </div>
+            <div class="text-xs text-gray-500 mt-1">{{ rating_info.count }} rating{{ 's' if rating_info.count != 1 }}</div>
+          </div>
+          <div class="flex-1">
+            {% for star in [5, 4, 3, 2, 1] %}
+            <div class="flex items-center gap-2 text-xs mb-1">
+              <span class="text-amber-400 w-4">{{ star }}★</span>
+              <div class="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                {% set count = reviews|selectattr('rating', 'equalto', star)|list|length %}
+                {% if rating_info.count > 0 %}
+                <div class="h-full bg-amber-400 rounded-full" style="width: {{ (count / rating_info.count * 100)|int }}%"></div>
+                {% endif %}
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- Rate this course -->
+        {% if user %}
+        <div class="bg-violet-50 rounded-xl p-4 mb-6">
+          <p class="text-sm font-semibold text-gray-700 mb-3">Rate this course:</p>
+          <form action="{{ url_for('rate_course', course_id=course.id) }}" method="post" class="flex items-center gap-3">
+            <div class="star-rating flex gap-1" id="star-rating">
+              {% for i in range(1, 6) %}
+              <button type="submit" name="rating" value="{{ i }}"
+                      class="text-3xl transition-transform hover:scale-110 star-btn
+                             {% if user_rating and i <= user_rating %}text-amber-400{% else %}text-gray-300{% endif %}"
+                      data-value="{{ i }}">★</button>
+              {% endfor %}
+            </div>
+            {% if user_rating %}
+            <span class="text-sm text-gray-500">Your rating: {{ user_rating }}/5</span>
+            {% else %}
+            <span class="text-sm text-gray-400">Click to rate</span>
+            {% endif %}
+          </form>
+        </div>
+        {% endif %}
+
+        <!-- Individual reviews -->
+        {% if reviews %}
+        <div class="space-y-3">
+          {% for review in reviews %}
+          <div class="flex items-center gap-3 py-2 border-b border-gray-100 last:border-0">
+            <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0"
+                 style="background-color: {{ review.avatar_color }}">
+              {{ review.username[0].upper() }}
+            </div>
+            <div>
+              <span class="font-medium text-sm text-gray-800">{{ review.username }}</span>
+              <div class="flex gap-0.5">
+                {% for i in range(1, 6) %}
+                <span class="text-sm {% if i <= review.rating %}text-amber-400{% else %}text-gray-200{% endif %}">★</span>
+                {% endfor %}
+              </div>
+            </div>
+            <span class="ml-auto text-xs text-gray-400">{{ review.created_at[:10] }}</span>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-gray-400 text-sm">No ratings yet. Be the first!</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- RIGHT: sidebar -->
+    <div class="space-y-5">
+
+      <!-- Enroll / Start card -->
+      <div class="bg-white rounded-2xl shadow p-6 text-center sticky top-20">
+        <div class="text-5xl mb-3">
+          {% if enrolled %}🚀{% else %}🎯{% endif %}
+        </div>
+        <h3 class="font-extrabold text-xl text-gray-900 mb-1">
+          {% if enrolled %}Continue learning{% else %}Start this course{% endif %}
+        </h3>
+        <p class="text-gray-500 text-sm mb-5">
+          {% if enrolled %}
+          You're enrolled! Pick up where you left off.
+          {% else %}
+          {{ course.item_count }} vocabulary items waiting for you.
+          {% endif %}
+        </p>
+
+        {% if user %}
+          {% if enrolled %}
+          <a href="{{ url_for('learn', course_id=course.id) }}"
+             class="block w-full bg-violet-600 hover:bg-violet-700 text-white font-bold py-3 rounded-xl text-center transition-colors mb-3">
+            Continue learning →
+          </a>
+          {% else %}
+          <form action="{{ url_for('enroll', course_id=course.id) }}" method="post">
+            <button type="submit"
+                    class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 rounded-xl transition-colors mb-3">
+              Enroll &amp; Start Learning 🌟
+            </button>
+          </form>
+          {% endif %}
+        {% else %}
+        <a href="{{ url_for('signup') }}?next={{ request.url }}"
+           class="block w-full bg-violet-600 hover:bg-violet-700 text-white font-bold py-3 rounded-xl text-center transition-colors mb-3">
+          Sign up to enroll
+        </a>
+        <a href="{{ url_for('login') }}"
+           class="block w-full text-violet-600 hover:text-violet-800 text-sm py-2 transition-colors">
+          Already have an account? Log in
+        </a>
+        {% endif %}
+
+        <div class="mt-4 pt-4 border-t border-gray-100 text-xs text-gray-400 space-y-1.5 text-left">
+          <div class="flex items-center gap-2"><span>📚</span> {{ course.item_count }} vocabulary items</div>
+          <div class="flex items-center gap-2"><span>👥</span> {{ "{:,}".format(course.enrollment_count) }} learners enrolled</div>
+          <div class="flex items-center gap-2"><span>🎯</span> {{ course.difficulty|capitalize }} level</div>
+          <div class="flex items-center gap-2"><span>🏷️</span> {{ course.category|capitalize }}</div>
+          {% if not course.is_official %}
+          <div class="flex items-center gap-2"><span>🌱</span> Community-created</div>
+          {% else %}
+          <div class="flex items-center gap-2"><span>⭐</span> Official LingoLeap course</div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Creator card -->
+      {% if not course.is_official and course.creator_name %}
+      <div class="bg-white rounded-2xl shadow p-5">
+        <h4 class="font-bold text-gray-700 text-sm mb-3">Course creator</h4>
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold"
+               style="background-color: {{ course.creator_color or '#7C3AED' }}">
+            {{ course.creator_name[0].upper() }}
+          </div>
+          <div>
+            <div class="font-semibold text-gray-900">{{ course.creator_name }}</div>
+            <div class="text-xs text-gray-400">Community contributor</div>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<script>
+  // Star rating hover effect
+  const stars = document.querySelectorAll('.star-btn');
+  stars.forEach(star => {
+    star.addEventListener('mouseenter', () => {
+      const val = parseInt(star.dataset.value);
+      stars.forEach(s => {
+        s.classList.toggle('text-amber-400', parseInt(s.dataset.value) <= val);
+        s.classList.toggle('text-gray-300', parseInt(s.dataset.value) > val);
+      });
+    });
+    star.addEventListener('mouseleave', () => {
+      const rated = {{ user_rating or 0 }};
+      stars.forEach(s => {
+        s.classList.toggle('text-amber-400', parseInt(s.dataset.value) <= rated);
+        s.classList.toggle('text-gray-300', parseInt(s.dataset.value) > rated);
+      });
+    });
+  });
+</script>
+{% endblock %}

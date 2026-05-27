@@ -1,0 +1,36 @@
+<a href="{{ url_for('course_detail', course_id=course.id) }}"
+   class="bg-white rounded-2xl shadow hover:shadow-xl transition-all hover:-translate-y-0.5 overflow-hidden group flex flex-col">
+  <div class="h-2 {% if course.is_official %}bg-gradient-to-r from-violet-500 to-pink-500{% else %}bg-gradient-to-r from-emerald-400 to-teal-500{% endif %}"></div>
+  <div class="p-5 flex flex-col flex-1">
+    <div class="flex items-start justify-between mb-3">
+      <span class="text-2xl">{{ course.flag_emoji }}</span>
+      <div class="flex flex-col items-end gap-1">
+        {% if course.is_official %}
+        <span class="bg-violet-100 text-violet-700 text-xs font-bold px-2 py-0.5 rounded-full">Official ✓</span>
+        {% else %}
+        <span class="bg-emerald-100 text-emerald-700 text-xs font-bold px-2 py-0.5 rounded-full">Community</span>
+        {% endif %}
+        <span class="text-xs text-gray-400 capitalize">{{ course.difficulty }}</span>
+      </div>
+    </div>
+
+    <h3 class="font-bold text-gray-900 mb-1 group-hover:text-violet-700 transition-colors leading-snug">{{ course.title }}</h3>
+    <p class="text-gray-500 text-sm mb-4 line-clamp-2 flex-1">{{ course.description }}</p>
+
+    {% if not course.is_official and course.creator_name %}
+    <div class="text-xs text-gray-400 mb-3">by <span class="font-medium text-gray-600">{{ course.creator_name }}</span></div>
+    {% endif %}
+
+    <div class="flex items-center justify-between text-sm border-t border-gray-100 pt-3 mt-auto">
+      <span class="text-gray-500 text-xs">📚 {{ course.item_count }} words</span>
+      <span class="flex items-center gap-1 text-xs text-gray-500">
+        <span class="text-amber-400 text-base">★</span>
+        <span class="font-semibold">{{ course.avg_rating or '—' }}</span>
+        <span class="text-gray-400">({{ course.rating_count or 0 }})</span>
+      </span>
+    </div>
+    <div class="text-xs text-gray-400 mt-1.5">
+      👥 {{ "{:,}".format(course.enrollment_count) }} learners
+    </div>
+  </div>
+</a>

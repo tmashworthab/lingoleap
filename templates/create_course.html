@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+{% block title %}Create a Course — LingoLeap{% endblock %}
+
+{% block content %}
+<div class="bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-12">
+  <div class="max-w-3xl mx-auto px-4">
+    <h1 class="text-4xl font-extrabold mb-2">Create a Course</h1>
+    <p class="text-emerald-100">Share your vocabulary knowledge with the LingoLeap community</p>
+  </div>
+</div>
+
+<div class="max-w-3xl mx-auto px-4 py-10">
+  <form action="{{ url_for('create_course') }}" method="post" id="create-form">
+
+    <!-- Step 1: Course Info -->
+    <div class="bg-white rounded-2xl shadow p-7 mb-6">
+      <h2 class="text-xl font-extrabold text-gray-900 mb-5 flex items-center gap-2">
+        <span class="w-8 h-8 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center text-sm font-extrabold">1</span>
+        Course details
+      </h2>
+
+      <div class="space-y-5">
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1.5">Course title <span class="text-red-400">*</span></label>
+          <input type="text" name="title" required minlength="5" maxlength="100"
+                 value="{{ form_data.get('title', '') if form_data else '' }}"
+                 placeholder="e.g. German Food & Drinks, 100 Most Common Nepali Verbs…"
+                 class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400">
+        </div>
+
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1.5">Description <span class="text-red-400">*</span></label>
+          <textarea name="description" required minlength="20" rows="3"
+                    placeholder="What will learners discover in this course? Who is it for?"
+                    class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400 resize-none">{{ form_data.get('description', '') if form_data else '' }}</textarea>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1.5">Language <span class="text-red-400">*</span></label>
+            <select name="language_id" required
+                    class="w-full border border-gray-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400 bg-white">
+              <option value="">Select…</option>
+              {% for lang in languages %}
+              <option value="{{ lang.id }}"
+                      {% if form_data and form_data.get('language_id') == lang.id|string %}selected{% endif %}>
+                {{ lang.flag_emoji }} {{ lang.name }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1.5">Difficulty</label>
+            <select name="difficulty"
+                    class="w-full border border-gray-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400 bg-white">
+              <option value="beginner">🌱 Beginner</option>
+              <option value="intermediate">🌿 Intermediate</option>
+              <option value="advanced">🌳 Advanced</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1.5">Category</label>
+            <select name="category"
+                    class="w-full border border-gray-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400 bg-white">
+              <option value="vocabulary">📚 Vocabulary</option>
+              <option value="conversation">💬 Conversation</option>
+              <option value="grammar">📝 Grammar</option>
+              <option value="phrases">🗣️ Phrases</option>
+              <option value="numbers">🔢 Numbers</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2: Vocabulary -->
+    <div class="bg-white rounded-2xl shadow p-7 mb-6">
+      <h2 class="text-xl font-extrabold text-gray-900 mb-2 flex items-center gap-2">
+        <span class="w-8 h-8 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center text-sm font-extrabold">2</span>
+        Vocabulary items
+        <span class="ml-auto text-sm font-normal text-gray-400" id="item-count-display">0 items</span>
+      </h2>
+      <p class="text-gray-400 text-sm mb-5">Add at least 3 word/translation pairs. Example sentence and pronunciation are optional but helpful.</p>
+
+      <!-- Column headers -->
+      <div class="hidden sm:grid grid-cols-12 gap-2 text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2 px-1">
+        <div class="col-span-3">Word / Phrase</div>
+        <div class="col-span-3">Translation</div>
+        <div class="col-span-3">Example sentence</div>
+        <div class="col-span-2">Pronunciation</div>
+        <div class="col-span-1"></div>
+      </div>
+
+      <div id="vocab-rows" class="space-y-2">
+        <!-- Rows injected by JS -->
+      </div>
+
+      <button type="button" onclick="addRow()"
+              class="mt-4 flex items-center gap-2 text-emerald-600 hover:text-emerald-800 font-semibold text-sm transition-colors group">
+        <span class="w-7 h-7 bg-emerald-100 group-hover:bg-emerald-200 rounded-full flex items-center justify-center font-bold transition-colors">＋</span>
+        Add another word
+      </button>
+    </div>
+
+    <!-- Submit -->
+    <div class="flex items-center justify-between">
+      <a href="{{ url_for('courses') }}" class="text-gray-400 hover:text-gray-600 text-sm transition-colors">Cancel</a>
+      <button type="submit"
+              class="bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold px-8 py-3 rounded-xl text-base transition-colors shadow-lg hover:shadow-xl">
+        Publish Course 🚀
+      </button>
+    </div>
+  </form>
+</div>
+
+<script>
+let rowCount = 0;
+
+function addRow(word='', translation='', example='', pronunciation='') {
+  rowCount++;
+  const row = document.createElement('div');
+  row.className = 'vocab-row grid grid-cols-12 gap-2 items-center';
+  row.innerHTML = `
+    <div class="col-span-12 sm:col-span-3">
+      <input type="text" name="word[]" value="${escHtml(word)}"
+             placeholder="Word / phrase"
+             class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300">
+    </div>
+    <div class="col-span-12 sm:col-span-3">
+      <input type="text" name="translation[]" value="${escHtml(translation)}"
+             placeholder="English translation"
+             class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300">
+    </div>
+    <div class="col-span-12 sm:col-span-3">
+      <input type="text" name="example[]" value="${escHtml(example)}"
+             placeholder="Example sentence (optional)"
+             class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300">
+    </div>
+    <div class="col-span-10 sm:col-span-2">
+      <input type="text" name="pronunciation[]" value="${escHtml(pronunciation)}"
+             placeholder="Pronunciation"
+             class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300">
+    </div>
+    <div class="col-span-2 sm:col-span-1 flex justify-end">
+      <button type="button" onclick="removeRow(this)"
+              class="w-8 h-8 flex items-center justify-center text-gray-300 hover:text-red-400 rounded-lg hover:bg-red-50 transition-colors text-lg font-bold">×</button>
+    </div>
+    <div class="col-span-12 border-b border-gray-100 sm:hidden"></div>
+  `;
+  document.getElementById('vocab-rows').appendChild(row);
+  updateCount();
+}
+
+function removeRow(btn) {
+  btn.closest('.vocab-row').remove();
+  updateCount();
+}
+
+function updateCount() {
+  const n = document.querySelectorAll('.vocab-row').length;
+  document.getElementById('item-count-display').textContent = `${n} item${n !== 1 ? 's' : ''}`;
+}
+
+function escHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// Start with 5 empty rows
+for (let i = 0; i < 5; i++) addRow();
+</script>
+{% endblock %}

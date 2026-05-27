@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}LingoLeap — Learn Any Language{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#7C3AED',
+            'primary-dark': '#5B21B6',
+            secondary: '#DB2777',
+            accent: '#D97706',
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-gray-50 font-sans text-gray-800 min-h-screen flex flex-col">
+
+  <!-- NAVBAR -->
+  <nav class="bg-gradient-to-r from-violet-700 to-purple-800 shadow-lg sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <!-- Logo -->
+        <a href="{{ url_for('index') }}" class="flex items-center gap-2 group">
+          <span class="text-3xl">🦜</span>
+          <span class="text-white font-extrabold text-xl tracking-tight group-hover:text-yellow-300 transition-colors">
+            LingoLeap
+          </span>
+        </a>
+
+        <!-- Desktop nav links -->
+        <div class="hidden md:flex items-center gap-6">
+          <a href="{{ url_for('courses') }}" class="text-purple-200 hover:text-white font-medium transition-colors">
+            Browse Courses
+          </a>
+          {% if user %}
+          <a href="{{ url_for('create_course') }}" class="text-purple-200 hover:text-white font-medium transition-colors">
+            Create Course
+          </a>
+          <a href="{{ url_for('profile') }}" class="flex items-center gap-2 text-purple-200 hover:text-white font-medium transition-colors">
+            <span class="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold"
+                  style="background-color: {{ user.avatar_color }}">
+              {{ user.username[0].upper() }}
+            </span>
+            {{ user.username }}
+          </a>
+          <form action="{{ url_for('logout') }}" method="post" class="inline">
+            <button type="submit" class="text-purple-300 hover:text-white text-sm transition-colors">
+              Log out
+            </button>
+          </form>
+          {% else %}
+          <a href="{{ url_for('login') }}" class="text-purple-200 hover:text-white font-medium transition-colors">
+            Log in
+          </a>
+          <a href="{{ url_for('signup') }}"
+             class="bg-yellow-400 hover:bg-yellow-300 text-gray-900 font-bold px-4 py-2 rounded-full text-sm transition-colors shadow">
+            Sign up free
+          </a>
+          {% endif %}
+        </div>
+
+        <!-- Mobile menu button -->
+        <button id="mobile-menu-btn" class="md:hidden text-white p-2">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Mobile menu -->
+      <div id="mobile-menu" class="hidden md:hidden pb-4">
+        <div class="flex flex-col gap-3 pt-2 border-t border-purple-600">
+          <a href="{{ url_for('courses') }}" class="text-purple-200 hover:text-white font-medium">Browse Courses</a>
+          {% if user %}
+          <a href="{{ url_for('create_course') }}" class="text-purple-200 hover:text-white font-medium">Create Course</a>
+          <a href="{{ url_for('profile') }}" class="text-purple-200 hover:text-white font-medium">Profile ({{ user.username }})</a>
+          <form action="{{ url_for('logout') }}" method="post">
+            <button type="submit" class="text-purple-300 hover:text-white text-sm">Log out</button>
+          </form>
+          {% else %}
+          <a href="{{ url_for('login') }}" class="text-purple-200 hover:text-white font-medium">Log in</a>
+          <a href="{{ url_for('signup') }}" class="text-yellow-400 hover:text-yellow-300 font-bold">Sign up free</a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- FLASH MESSAGES -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  <div class="max-w-7xl mx-auto w-full px-4 pt-4">
+    {% for category, message in messages %}
+    <div class="flash-msg flex items-center gap-3 p-4 rounded-xl mb-2 text-sm font-medium shadow
+      {% if category == 'success' %}bg-emerald-50 text-emerald-800 border border-emerald-200
+      {% elif category == 'error' %}bg-red-50 text-red-800 border border-red-200
+      {% elif category == 'warning' %}bg-amber-50 text-amber-800 border border-amber-200
+      {% else %}bg-blue-50 text-blue-800 border border-blue-200{% endif %}">
+      <span class="text-lg">
+        {% if category == 'success' %}✅
+        {% elif category == 'error' %}❌
+        {% elif category == 'warning' %}⚠️
+        {% else %}ℹ️{% endif %}
+      </span>
+      {{ message }}
+      <button onclick="this.parentElement.remove()" class="ml-auto opacity-60 hover:opacity-100 text-lg leading-none">&times;</button>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+  {% endwith %}
+
+  <!-- MAIN CONTENT -->
+  <main class="flex-1">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="bg-gray-900 text-gray-400 mt-16">
+    <div class="max-w-7xl mx-auto px-4 py-10">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div class="md:col-span-2">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="text-2xl">🦜</span>
+            <span class="text-white font-extrabold text-lg">LingoLeap</span>
+          </div>
+          <p class="text-sm leading-relaxed">
+            Learn any language the community way. Create courses, share vocabulary, and learn together. Free forever.
+          </p>
+        </div>
+        <div>
+          <h4 class="text-white font-semibold mb-3">Languages</h4>
+          <ul class="text-sm space-y-1">
+            <li><a href="{{ url_for('courses') }}?lang=de" class="hover:text-white transition-colors">🇩🇪 German</a></li>
+            <li><a href="{{ url_for('courses') }}?lang=lt" class="hover:text-white transition-colors">🇱🇹 Lithuanian</a></li>
+            <li><a href="{{ url_for('courses') }}?lang=ne" class="hover:text-white transition-colors">🇳🇵 Nepali</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="text-white font-semibold mb-3">LingoLeap</h4>
+          <ul class="text-sm space-y-1">
+            <li><a href="{{ url_for('courses') }}" class="hover:text-white transition-colors">Browse Courses</a></li>
+            <li><a href="{{ url_for('create_course') }}" class="hover:text-white transition-colors">Create a Course</a></li>
+            <li><a href="{{ url_for('signup') }}" class="hover:text-white transition-colors">Sign up free</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="border-t border-gray-800 mt-8 pt-6 text-sm text-center">
+        © 2026 LingoLeap. Made with 💜 for language lovers everywhere.
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Mobile menu toggle
+    document.getElementById('mobile-menu-btn').addEventListener('click', () => {
+      document.getElementById('mobile-menu').classList.toggle('hidden');
+    });
+  </script>
+  {% block extra_scripts %}{% endblock %}
+</body>
+</html>
