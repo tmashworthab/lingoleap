@@ -21,7 +21,9 @@ def init_db():
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         username TEXT NOT NULL UNIQUE,
         email TEXT NOT NULL UNIQUE,
-        password_hash TEXT NOT NULL,
+        password_hash TEXT NOT NULL DEFAULT '',
+        google_id TEXT UNIQUE,
+        avatar_url TEXT,
         avatar_color TEXT NOT NULL DEFAULT '#7C3AED',
         xp INTEGER NOT NULL DEFAULT 0,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -99,6 +101,18 @@ def init_db():
     );
     """)
     conn.commit()
+
+    # Migrations: add new columns to existing databases without breaking them
+    for sql in [
+        "ALTER TABLE users ADD COLUMN google_id TEXT",
+        "ALTER TABLE users ADD COLUMN avatar_url TEXT",
+    ]:
+        try:
+            conn.execute(sql)
+            conn.commit()
+        except Exception:
+            pass  # Column already exists — skip
+
     conn.close()
 
 

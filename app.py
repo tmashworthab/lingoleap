@@ -5,10 +5,21 @@ import secrets
 from functools import wraps
 from flask import (Flask, render_template, request, redirect, url_for,
                    session, flash, jsonify, abort)
+from authlib.integrations.flask_client import OAuth
 from database import get_db, init_db, seed_db, get_course_avg_rating, get_user_rating, is_enrolled
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', secrets.token_hex(32))
+
+# Google OAuth
+oauth = OAuth(app)
+google = oauth.register(
+    name='google',
+    client_id=os.environ.get('GOOGLE_CLIENT_ID'),
+    client_secret=os.environ.get('GOOGLE_CLIENT_SECRET'),
+    server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
+    client_kwargs={'scope': 'openid email profile'},
+)
 
 # Initialise DB on startup (works with both `python app.py` and gunicorn)
 init_db()
@@ -117,6 +128,70 @@ def login():
 def logout():
     session.clear()
     flash('You have been logged out.', 'info')
+    return redirect(url_for('index'))
+
+
+@app.route('/login/google')
+def google_login():
+    if 'user_id' in session:
+        return redirect(url_for('index'))
+    redirect_uri = url_for('google_callback', _external=True)
+    return google.authorize_redirect(redirect_uri)
+
+
+@app.route('/auth/google/callback')
+def google_callback():
+    try:
+        token = google.authorize_access_token()
+    except Exception:
+        flash('Google sign-in failed. Please try again.', 'error')
+        return redirect(url_for('login'))
+
+    user_info = token.get('userinfo')
+    if not user_info:
+        flash('Could not retrieve your Google account info.', 'error')
+        return redirect(url_for('login'))
+
+    google_id = user_info['sub']
+    email     = user_info.get('email', '')
+    name      = user_info.get('name', '')
+    picture   = user_info.get('picture', '')
+
+    conn = get_db()
+
+    # 1. Already linked to this Google account?
+    user = conn.execute("SELECT * FROM users WHERE google_id=?", (google_id,)).fetchone()
+
+    if not user:
+        # 2. Same email exists? Link the Google account to it
+        user = conn.execute("SELECT * FROM users WHERE email=?", (email,)).fetchone()
+        if user:
+            conn.execute("UPDATE users SET google_id=?, avatar_url=? WHERE id=?",
+                         (google_id, picture, user['id']))
+            conn.commit()
+            user = conn.execute("SELECT * FROM users WHERE id=?", (user['id'],)).fetchone()
+        else:
+            # 3. Brand new user — create account from Google profile
+            base = ''.join(c for c in name.lower().replace(' ', '') if c.isalnum()) or 'user'
+            username, counter = base, 1
+            while conn.execute("SELECT 1 FROM users WHERE username=?", (username,)).fetchone():
+                username = f"{base}{counter}"
+                counter += 1
+
+            color = AVATAR_COLORS[len(username) % len(AVATAR_COLORS)]
+            conn.execute(
+                "INSERT INTO users (username, email, password_hash, google_id, avatar_url, avatar_color) "
+                "VALUES (?,?,'google_oauth',?,?,?)",
+                (username, email, google_id, picture, color)
+            )
+            conn.commit()
+            user = conn.execute("SELECT * FROM users WHERE google_id=?", (google_id,)).fetchone()
+            flash(f'Welcome to LingoLeap, {username}! 🎉', 'success')
+
+    conn.close()
+    session['user_id']  = user['id']
+    session['username'] = user['username']
+    flash(f'Welcome back, {user["username"]}! 👋', 'success')
     return redirect(url_for('index'))
 
 
