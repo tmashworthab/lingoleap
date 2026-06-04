@@ -2,6 +2,10 @@ import os
 import json
 import bcrypt
 import secrets
+import smtplib
+from datetime import datetime, timedelta
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 from functools import wraps
 from flask import (Flask, render_template, request, redirect, url_for,
                    session, flash, jsonify, abort)
@@ -48,6 +52,53 @@ def current_user():
     user = conn.execute("SELECT * FROM users WHERE id=?", (session['user_id'],)).fetchone()
     conn.close()
     return user
+
+
+# ── EMAIL ────────────────────────────────────────────────────────────────────
+
+def send_reset_email(to_email, username, reset_url):
+    gmail_user     = os.environ.get('GMAIL_USER')
+    gmail_password = os.environ.get('GMAIL_APP_PASSWORD')
+
+    if not gmail_user or not gmail_password:
+        # No email credentials — print link to console for local dev
+        print(f"\n[DEV] Password reset link for {username}:\n{reset_url}\n")
+        return True
+
+    msg = MIMEMultipart('alternative')
+    msg['Subject'] = 'Reset your LingoLeap password'
+    msg['From']    = f'LingoLeap <{gmail_user}>'
+    msg['To']      = to_email
+
+    html = f"""
+    <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:32px;">
+      <h2 style="color:#7C3AED;margin-bottom:4px;">Reset your password</h2>
+      <p style="color:#444;">Hi {username},</p>
+      <p style="color:#444;">Click the button below to set a new password.
+         This link expires in <strong>1 hour</strong>.</p>
+      <a href="{reset_url}"
+         style="display:inline-block;background:#7C3AED;color:#fff;padding:14px 28px;
+                border-radius:10px;text-decoration:none;font-weight:bold;margin:16px 0;">
+        Reset my password
+      </a>
+      <p style="color:#888;font-size:12px;">
+        If you didn't request this, you can safely ignore this email.<br>
+        The link will expire automatically.
+      </p>
+      <hr style="border:none;border-top:1px solid #eee;margin-top:24px;">
+      <p style="color:#bbb;font-size:11px;">LingoLeap &mdash; Learn any language, your way.</p>
+    </div>
+    """
+    msg.attach(MIMEText(html, 'html'))
+
+    try:
+        with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
+            server.login(gmail_user, gmail_password)
+            server.sendmail(gmail_user, to_email, msg.as_string())
+        return True
+    except Exception as e:
+        print(f"Email send error: {e}")
+        return False
 
 
 # ── AUTH ─────────────────────────────────────────────────────────────────────
@@ -129,6 +180,86 @@ def logout():
     session.clear()
     flash('You have been logged out.', 'info')
     return redirect(url_for('index'))
+
+
+@app.route('/forgot-password', methods=['GET', 'POST'])
+def forgot_password():
+    if 'user_id' in session:
+        return redirect(url_for('index'))
+    if request.method == 'POST':
+        email = request.form.get('email', '').strip().lower()
+        conn = get_db()
+        user = conn.execute("SELECT * FROM users WHERE email=?", (email,)).fetchone()
+
+        if user:
+            if user['password_hash'] == 'google_oauth':
+                # Google-only account — no password to reset
+                flash('This account uses Google sign-in. Please use the "Continue with Google" button to log in.', 'info')
+                conn.close()
+                return redirect(url_for('login'))
+
+            # Invalidate any existing tokens for this user
+            conn.execute("UPDATE password_reset_tokens SET used=1 WHERE user_id=?", (user['id'],))
+
+            token      = secrets.token_urlsafe(32)
+            expires_at = datetime.utcnow() + timedelta(hours=1)
+            conn.execute(
+                "INSERT INTO password_reset_tokens (user_id, token, expires_at) VALUES (?,?,?)",
+                (user['id'], token, str(expires_at))
+            )
+            conn.commit()
+
+            reset_url = url_for('reset_password', token=token, _external=True)
+            send_reset_email(user['email'], user['username'], reset_url)
+
+        conn.close()
+        # Always show the same message so we don't reveal whether an email exists
+        flash('If that email address is registered, you will receive a reset link shortly. Check your inbox (and spam folder).', 'info')
+        return redirect(url_for('login'))
+
+    return render_template('forgot_password.html', user=current_user())
+
+
+@app.route('/reset-password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    conn = get_db()
+    reset = conn.execute(
+        "SELECT * FROM password_reset_tokens WHERE token=? AND used=0 AND expires_at > datetime('now')",
+        (token,)
+    ).fetchone()
+
+    if not reset:
+        conn.close()
+        flash('This reset link is invalid or has expired. Please request a new one.', 'error')
+        return redirect(url_for('forgot_password'))
+
+    if request.method == 'POST':
+        password = request.form.get('password', '')
+        confirm  = request.form.get('confirm_password', '')
+
+        errors = []
+        if len(password) < 6:
+            errors.append('Password must be at least 6 characters.')
+        if password != confirm:
+            errors.append('Passwords do not match.')
+
+        if errors:
+            for e in errors:
+                flash(e, 'error')
+            conn.close()
+            return render_template('reset_password.html', token=token, user=current_user())
+
+        pw_hash = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
+        conn.execute("UPDATE users SET password_hash=? WHERE id=?", (pw_hash, reset['user_id']))
+        conn.execute("UPDATE password_reset_tokens SET used=1 WHERE id=?", (reset['id'],))
+        conn.commit()
+        conn.close()
+
+        flash('Password reset successfully! You can now log in with your new password.', 'success')
+        return redirect(url_for('login'))
+
+    conn.close()
+    return render_template('reset_password.html', token=token, user=current_user())
 
 
 @app.route('/login/google')

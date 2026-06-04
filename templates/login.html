@@ -45,6 +45,10 @@
         <div>
           <div class="flex items-center justify-between mb-1.5">
             <label class="text-sm font-semibold text-gray-700" for="password">Password</label>
+            <a href="{{ url_for('forgot_password') }}"
+               class="text-xs text-violet-500 hover:text-violet-700 transition-colors">
+              Forgot password?
+            </a>
           </div>
           <input type="password" id="password" name="password" required autocomplete="current-password"
                  placeholder="Your password"

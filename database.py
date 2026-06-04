@@ -99,6 +99,16 @@ def init_db():
         FOREIGN KEY (user_id) REFERENCES users(id),
         FOREIGN KEY (vocab_item_id) REFERENCES vocab_items(id)
     );
+
+    CREATE TABLE IF NOT EXISTS password_reset_tokens (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        token TEXT NOT NULL UNIQUE,
+        expires_at TIMESTAMP NOT NULL,
+        used INTEGER NOT NULL DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id)
+    );
     """)
     conn.commit()
 
