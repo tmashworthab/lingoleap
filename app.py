@@ -176,8 +176,7 @@ def login():
             session['username'] = user['username']
             if not user['onboarded']:
                 return redirect(url_for('onboarding'))
-            flash(f'Welcome back, {user["username"]}!', 'success')
-            return redirect(request.args.get('next') or url_for('index'))
+            return redirect(request.args.get('next') or url_for('dashboard'))
         flash('Invalid username/email or password.', 'error')
 
     return render_template('login.html')
@@ -332,8 +331,7 @@ def google_callback():
     session['username'] = user['username']
     if not user['onboarded']:
         return redirect(url_for('onboarding'))
-    flash(f'Welcome back, {user["username"]}!', 'success')
-    return redirect(url_for('index'))
+    return redirect(url_for('dashboard'))
 
 
 # ── ONBOARDING ───────────────────────────────────────────────────────────────
@@ -397,11 +395,67 @@ def onboarding():
         if was_onboarded:
             flash('Profile updated!', 'success')
             return redirect(url_for('profile'))
-        flash(f'Welcome to LingoLeap, {new_username}!', 'success')
-        return redirect(url_for('index'))
+        return redirect(url_for('dashboard'))
 
     return render_template('onboarding.html', user=user, avatars=AVATARS,
                            prefill_username=user['username'])
+
+
+# ── DASHBOARD ────────────────────────────────────────────────────────────────
+
+@app.route('/dashboard')
+@login_required
+def dashboard():
+    user = current_user()
+    conn = get_db()
+
+    # Courses the user is enrolled in
+    enrolled = conn.execute("""
+        SELECT c.*, l.name as lang_name, l.flag_emoji, l.code as lang_code,
+               e.completed_items, e.enrolled_at
+        FROM enrollments e
+        JOIN courses c ON e.course_id = c.id
+        JOIN languages l ON c.language_id = l.id
+        WHERE e.user_id=?
+        ORDER BY e.enrolled_at DESC
+    """, (user['id'],)).fetchall()
+
+    enrolled_ids = {r['id'] for r in enrolled}
+
+    # Suggested courses (popular, not yet enrolled, mix of official + community)
+    suggested = conn.execute("""
+        SELECT c.*, l.name as lang_name, l.flag_emoji,
+               ROUND(AVG(r.rating), 1) as avg_rating
+        FROM courses c
+        JOIN languages l ON c.language_id = l.id
+        LEFT JOIN course_ratings r ON c.id = r.course_id
+        WHERE c.id NOT IN ({})
+        GROUP BY c.id
+        ORDER BY c.enrollment_count DESC
+        LIMIT 6
+    """.format(','.join('?' * len(enrolled_ids)) if enrolled_ids else '0'),
+        list(enrolled_ids)
+    ).fetchall()
+
+    # Level progress for enrolled courses
+    level_progress = {}
+    for course in enrolled:
+        total_lvls = max(1, math.ceil(course['item_count'] / WORDS_PER_LEVEL))
+        completed_lvls = conn.execute(
+            "SELECT COUNT(*) FROM user_level_progress WHERE user_id=? AND course_id=? AND completed=1",
+            (user['id'], course['id'])
+        ).fetchone()[0]
+        level_progress[course['id']] = {'total': total_lvls, 'done': completed_lvls}
+
+    languages = conn.execute("SELECT * FROM languages").fetchall()
+    conn.close()
+
+    return render_template('dashboard.html',
+                           user=user,
+                           enrolled=enrolled,
+                           suggested=suggested,
+                           level_progress=level_progress,
+                           languages=languages)
 
 
 # ── MAIN PAGES ───────────────────────────────────────────────────────────────

@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% block title %}Welcome, {{ user.username }} — LingoLeap{% endblock %}
+
+{% block content %}
+
+<!-- Welcome hero -->
+<div class="bg-gradient-to-r from-violet-700 to-purple-800 text-white">
+  <div class="max-w-5xl mx-auto px-4 py-10 flex items-center gap-6">
+    {% if user.avatar_choice %}
+    <img src="{{ url_for('static', filename='avatars/avatar' + user.avatar_choice|string + '.png') }}"
+         class="w-20 h-20 rounded-full object-cover bg-white shadow-xl border-4 border-white/30 flex-shrink-0"
+         alt="{{ user.username }}">
+    {% else %}
+    <div class="w-20 h-20 rounded-full flex items-center justify-center text-white text-3xl font-black shadow-xl border-4 border-white/30 flex-shrink-0"
+         style="background-color: {{ user.avatar_color }}">
+      {{ user.username[0].upper() }}
+    </div>
+    {% endif %}
+    <div>
+      <p class="text-purple-200 text-sm font-medium mb-1">Good to see you!</p>
+      <h1 class="text-3xl font-extrabold mb-1">Welcome back, {{ user.username }}!</h1>
+      <p class="text-purple-200">
+        {% if enrolled %}
+          Ready to continue learning? Pick up where you left off.
+        {% else %}
+          Let's get learning — choose a course below to get started.
+        {% endif %}
+      </p>
+    </div>
+  </div>
+</div>
+
+<div class="max-w-5xl mx-auto px-4 py-10 space-y-12">
+
+  <!-- ── My courses ─────────────────────────────────────────────────────── -->
+  {% if enrolled %}
+  <section>
+    <h2 class="text-2xl font-extrabold text-gray-900 mb-5">Continue learning</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      {% for course in enrolled %}
+      {% set lp = level_progress[course.id] %}
+      {% set pct = [(lp.done / lp.total * 100)|int, 100]|min %}
+      <div class="bg-white rounded-2xl shadow hover:shadow-lg transition-all overflow-hidden group">
+        <div class="h-2 {% if pct == 100 %}bg-emerald-400{% else %}bg-gradient-to-r from-violet-500 to-pink-500{% endif %}"></div>
+        <div class="p-5">
+          <div class="flex items-start justify-between mb-3">
+            <span class="text-3xl">{{ course.flag_emoji }}</span>
+            {% if pct == 100 %}
+            <span class="bg-emerald-100 text-emerald-700 text-xs font-bold px-2 py-0.5 rounded-full">Complete!</span>
+            {% else %}
+            <span class="text-xs text-gray-400">Level {{ lp.done + 1 }} of {{ lp.total }}</span>
+            {% endif %}
+          </div>
+          <h3 class="font-bold text-gray-900 mb-1 group-hover:text-violet-700 transition-colors">{{ course.title }}</h3>
+          <p class="text-xs text-gray-400 mb-3">{{ course.lang_name }}</p>
+
+          <!-- Progress bar -->
+          <div class="h-2 bg-gray-100 rounded-full overflow-hidden mb-1">
+            <div class="h-full rounded-full {% if pct == 100 %}bg-emerald-400{% else %}bg-violet-500{% endif %} transition-all"
+                 style="width:{{ pct }}%"></div>
+          </div>
+          <div class="text-xs text-gray-400 mb-4">{{ lp.done }} / {{ lp.total }} levels complete</div>
+
+          <a href="{{ url_for('learn', course_id=course.id) }}"
+             class="block w-full text-center font-bold py-2.5 rounded-xl text-sm transition-colors
+                    {% if pct == 100 %}bg-emerald-100 hover:bg-emerald-200 text-emerald-700{% else %}bg-violet-600 hover:bg-violet-700 text-white{% endif %}">
+            {% if pct == 100 %}Practice again{% else %}Continue →{% endif %}
+          </a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  <!-- ── Pick a language ────────────────────────────────────────────────── -->
+  <section>
+    <h2 class="text-2xl font-extrabold text-gray-900 mb-2">
+      {% if enrolled %}Explore more languages{% else %}Let's get learning!</h2>
+    {% else %}Choose a language to start{% endif %}
+    </h2>
+    <p class="text-gray-500 mb-5">
+      {% if not enrolled %}Pick a language and enroll on your first course — it only takes a second.{% endif %}
+    </p>
+
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-8">
+      {% for lang in languages %}
+      <a href="{{ url_for('courses') }}?lang={{ lang.code }}"
+         class="group relative overflow-hidden rounded-2xl shadow hover:shadow-xl transition-all hover:-translate-y-1">
+        <div class="h-36 flex flex-col items-center justify-center text-white"
+             style="background:linear-gradient(135deg,{{ lang.color_from }},{{ lang.color_to }})">
+          <div class="text-6xl mb-1 group-hover:scale-110 transition-transform">{{ lang.flag_emoji }}</div>
+          <div class="text-lg font-extrabold">{{ lang.name }}</div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- ── Suggested courses ─────────────────────────────────────────────── -->
+  {% if suggested %}
+  <section>
+    <div class="flex items-center justify-between mb-5">
+      <h2 class="text-2xl font-extrabold text-gray-900">Popular courses</h2>
+      <a href="{{ url_for('courses') }}" class="text-violet-600 hover:text-violet-800 text-sm font-semibold">
+        Browse all →
+      </a>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      {% for course in suggested %}
+      {% include '_course_card.html' %}
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+</div>
+{% endblock %}
