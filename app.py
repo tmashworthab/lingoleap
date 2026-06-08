@@ -109,7 +109,9 @@ def send_reset_email(to_email, username, reset_url):
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     if 'user_id' in session:
-        return redirect(url_for('index'))
+        if current_user():          # session valid — already logged in
+            return redirect(url_for('index'))
+        session.clear()             # stale session (user deleted) — wipe it
     if request.method == 'POST':
         username = request.form.get('username', '').strip()
         email = request.form.get('email', '').strip().lower()
@@ -155,7 +157,9 @@ def signup():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if 'user_id' in session:
-        return redirect(url_for('index'))
+        if current_user():
+            return redirect(url_for('index'))
+        session.clear()             # stale session — wipe it
     if request.method == 'POST':
         identifier = request.form.get('identifier', '').strip()
         password = request.form.get('password', '')
