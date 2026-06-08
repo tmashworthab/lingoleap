@@ -11,7 +11,7 @@ from flask import (Flask, render_template, request, redirect, url_for,
                    session, flash, jsonify, abort)
 from authlib.integrations.flask_client import OAuth
 from werkzeug.middleware.proxy_fix import ProxyFix
-from database import get_db, init_db, seed_db, get_course_avg_rating, get_user_rating, is_enrolled
+from database import get_db, init_db, seed_db, execute_insert, get_course_avg_rating, get_user_rating, is_enrolled
 
 app = Flask(__name__)
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
@@ -670,11 +670,10 @@ def create_course():
 
         user = current_user()
         conn = get_db()
-        conn.execute(
+        course_id = execute_insert(conn,
             "INSERT INTO courses (title, description, language_id, creator_id, is_official, difficulty, category, item_count) VALUES (?,?,?,?,0,?,?,?)",
             (title, description, language_id, user['id'], difficulty, category, len(valid_items))
         )
-        course_id = conn.execute("SELECT last_insert_rowid()").fetchone()[0]
 
         for i, (w, t, ex, pr) in enumerate(valid_items):
             conn.execute(
