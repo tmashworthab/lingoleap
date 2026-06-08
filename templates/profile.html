@@ -21,8 +21,9 @@
         <p class="text-purple-200 text-sm mt-1">
           Member since {{ user.created_at[:10] }}
         </p>
-        <a href="{{ url_for('onboarding') }}" class="text-purple-300 hover:text-white text-xs underline mt-1 inline-block transition-colors">
-          Change nickname or avatar
+        <a href="{{ url_for('onboarding') }}"
+           class="inline-flex items-center gap-1.5 bg-white/20 hover:bg-white/30 text-white text-xs font-semibold px-3 py-1.5 rounded-full mt-2 transition-colors">
+          ✏️ Edit profile
         </a>
         <div class="flex items-center gap-3 mt-2">
           <span class="bg-amber-400 text-gray-900 text-xs font-extrabold px-3 py-1 rounded-full">
@@ -131,6 +132,33 @@
         {% if not enrolled_courses %}
         <p class="text-gray-400 text-xs text-center mt-2">Start learning to earn badges!</p>
         {% endif %}
+      </div>
+
+      <!-- Edit profile card -->
+      <div class="bg-white rounded-2xl shadow p-5">
+        <h3 class="font-extrabold text-gray-900 text-sm mb-4 flex items-center gap-2">
+          <span>🎨</span> Your avatar
+        </h3>
+        <div class="flex items-center gap-4 mb-4">
+          {% if user.avatar_choice %}
+          <img src="{{ url_for('static', filename='avatars/avatar' + user.avatar_choice|string + '.png') }}"
+               class="w-16 h-16 rounded-full object-cover bg-gray-50 border-2 border-violet-200"
+               alt="{{ user.username }}">
+          {% else %}
+          <div class="w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl font-black border-2 border-violet-200"
+               style="background-color: {{ user.avatar_color }}">
+            {{ user.username[0].upper() }}
+          </div>
+          {% endif %}
+          <div>
+            <div class="font-semibold text-gray-900">{{ user.username }}</div>
+            <div class="text-xs text-gray-400">Level {{ level }}</div>
+          </div>
+        </div>
+        <a href="{{ url_for('onboarding') }}"
+           class="block w-full bg-violet-600 hover:bg-violet-700 text-white font-bold py-2.5 rounded-xl text-center text-sm transition-colors">
+          Change avatar or nickname
+        </a>
       </div>
 
       <a href="{{ url_for('create_course') }}"

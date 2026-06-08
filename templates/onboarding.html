@@ -53,9 +53,18 @@
 
   <!-- Header -->
   <div class="text-center mb-10">
+    {% if user.onboarded %}
+    <a href="{{ url_for('profile') }}" class="inline-flex items-center gap-1 text-gray-400 hover:text-gray-600 text-sm mb-6 transition-colors">
+      ← Back to profile
+    </a>
+    <div class="text-5xl mb-4">✏️</div>
+    <h1 class="text-4xl font-extrabold text-gray-900 mb-2">Edit your profile</h1>
+    <p class="text-gray-500 text-lg">Update your nickname or pick a new avatar.</p>
+    {% else %}
     <div class="text-5xl mb-4">🦜</div>
     <h1 class="text-4xl font-extrabold text-gray-900 mb-2">Welcome to LingoLeap!</h1>
     <p class="text-gray-500 text-lg">Pick a nickname and choose your avatar to get started.</p>
+    {% endif %}
   </div>
 
   <form action="{{ url_for('onboarding') }}" method="post" id="onboarding-form">
@@ -96,8 +105,8 @@
     <!-- Submit -->
     <button type="submit" id="submit-btn"
             class="w-full bg-violet-600 hover:bg-violet-700 text-white font-extrabold py-4 rounded-2xl text-lg transition-colors shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled>
-      Let's go!
+            {% if not user.onboarded %}disabled{% endif %}>
+      {% if user.onboarded %}Save changes{% else %}Let's go!{% endif %}
     </button>
   </form>
 

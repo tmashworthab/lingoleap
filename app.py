@@ -382,6 +382,7 @@ def onboarding():
             return render_template('onboarding.html', user=user, avatars=AVATARS,
                                    prefill_username=new_username)
 
+        was_onboarded = bool(user['onboarded'])
         conn.execute(
             "UPDATE users SET username=?, avatar_choice=?, onboarded=1 WHERE id=?",
             (new_username, avatar_choice, user['id'])
@@ -389,6 +390,9 @@ def onboarding():
         conn.commit()
         conn.close()
         session['username'] = new_username
+        if was_onboarded:
+            flash('Profile updated!', 'success')
+            return redirect(url_for('profile'))
         flash(f'Welcome to LingoLeap, {new_username}!', 'success')
         return redirect(url_for('index'))
 
