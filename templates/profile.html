@@ -19,7 +19,7 @@
       <div>
         <h1 class="text-3xl font-extrabold">{{ user.username }}</h1>
         <p class="text-purple-200 text-sm mt-1">
-          Member since {{ user.created_at[:10] }}
+          Member since {{ user.created_at|string|truncate(10, killwords=True, end='') }}
         </p>
         <a href="{{ url_for('onboarding') }}"
            class="inline-flex items-center gap-1.5 bg-white/20 hover:bg-white/30 text-white text-xs font-semibold px-3 py-1.5 rounded-full mt-2 transition-colors">
