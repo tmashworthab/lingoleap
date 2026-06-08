@@ -53,10 +53,15 @@
             Create Course
           </a>
           <a href="{{ url_for('profile') }}" class="flex items-center gap-2 text-purple-200 hover:text-white font-medium transition-colors">
+            {% if user.avatar_choice %}
+            <img src="{{ url_for('static', filename='avatars/avatar' + user.avatar_choice|string + '.png') }}"
+                 class="w-8 h-8 rounded-full object-cover bg-white" alt="{{ user.username }}">
+            {% else %}
             <span class="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold"
                   style="background-color: {{ user.avatar_color }}">
               {{ user.username[0].upper() }}
             </span>
+            {% endif %}
             {{ user.username }}
           </a>
           <form action="{{ url_for('logout') }}" method="post" class="inline">

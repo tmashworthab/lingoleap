@@ -131,6 +131,8 @@ CREATE TABLE IF NOT EXISTS users (
     google_id TEXT UNIQUE,
     avatar_url TEXT,
     avatar_color TEXT NOT NULL DEFAULT '#7C3AED',
+    avatar_choice INTEGER DEFAULT 0,
+    onboarded INTEGER NOT NULL DEFAULT 0,
     xp INTEGER NOT NULL DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -231,6 +233,8 @@ CREATE TABLE IF NOT EXISTS users (
     google_id TEXT UNIQUE,
     avatar_url TEXT,
     avatar_color TEXT NOT NULL DEFAULT '#7C3AED',
+    avatar_choice INTEGER DEFAULT 0,
+    onboarded INTEGER NOT NULL DEFAULT 0,
     xp INTEGER NOT NULL DEFAULT 0,
     created_at TIMESTAMP DEFAULT NOW()
 );
@@ -319,6 +323,20 @@ def init_db():
         if stmt:
             conn.execute(stmt)
     conn.commit()
+
+    # Migrations — add new columns to existing databases safely
+    for sql in [
+        "ALTER TABLE users ADD COLUMN google_id TEXT",
+        "ALTER TABLE users ADD COLUMN avatar_url TEXT",
+        "ALTER TABLE users ADD COLUMN avatar_choice INTEGER DEFAULT 0",
+        "ALTER TABLE users ADD COLUMN onboarded INTEGER NOT NULL DEFAULT 0",
+    ]:
+        try:
+            conn.execute(sql)
+            conn.commit()
+        except Exception:
+            pass  # Column already exists
+
     conn.close()
 
 

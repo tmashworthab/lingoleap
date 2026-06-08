@@ -147,8 +147,7 @@ def signup():
         conn.close()
         session['user_id'] = user_id
         session['username'] = username
-        flash(f'Welcome to LingoLeap, {username}!', 'success')
-        return redirect(url_for('index'))
+        return redirect(url_for('onboarding'))  # → pick nickname + avatar
 
     return render_template('signup.html')
 
@@ -171,6 +170,8 @@ def login():
         if user and bcrypt.checkpw(password.encode(), user['password_hash'].encode()):
             session['user_id'] = user['id']
             session['username'] = user['username']
+            if not user['onboarded']:
+                return redirect(url_for('onboarding'))
             flash(f'Welcome back, {user["username"]}!', 'success')
             return redirect(request.args.get('next') or url_for('index'))
         flash('Invalid username/email or password.', 'error')
@@ -325,8 +326,69 @@ def google_callback():
     conn.close()
     session['user_id']  = user['id']
     session['username'] = user['username']
+    if not user['onboarded']:
+        return redirect(url_for('onboarding'))
     flash(f'Welcome back, {user["username"]}!', 'success')
     return redirect(url_for('index'))
+
+
+# ── ONBOARDING ───────────────────────────────────────────────────────────────
+
+AVATARS = [
+    {'id': 1, 'name': 'The Scholar',  'file': 'avatar1.png'},
+    {'id': 2, 'name': 'The Traveller','file': 'avatar2.png'},
+    {'id': 3, 'name': 'The Professor','file': 'avatar3.png'},
+    {'id': 4, 'name': 'The Writer',   'file': 'avatar4.png'},
+    {'id': 5, 'name': 'The Academic', 'file': 'avatar5.png'},
+]
+
+@app.route('/onboarding', methods=['GET', 'POST'])
+@login_required
+def onboarding():
+    user = current_user()
+
+    if request.method == 'POST':
+        new_username = request.form.get('username', '').strip()
+        avatar_choice = int(request.form.get('avatar_choice', 0))
+
+        errors = []
+        if len(new_username) < 3:
+            errors.append('Nickname must be at least 3 characters.')
+        if not new_username.replace('_','').replace('-','').isalnum():
+            errors.append('Nickname can only contain letters, numbers, hyphens and underscores.')
+        if avatar_choice not in [a['id'] for a in AVATARS]:
+            errors.append('Please choose an avatar.')
+
+        if errors:
+            for e in errors:
+                flash(e, 'error')
+            return render_template('onboarding.html', user=user, avatars=AVATARS,
+                                   prefill_username=new_username)
+
+        conn = get_db()
+        # Check username not taken by someone else
+        existing = conn.execute(
+            "SELECT id FROM users WHERE username=? AND id != ?",
+            (new_username, user['id'])
+        ).fetchone()
+        if existing:
+            conn.close()
+            flash('That nickname is already taken. Try another!', 'error')
+            return render_template('onboarding.html', user=user, avatars=AVATARS,
+                                   prefill_username=new_username)
+
+        conn.execute(
+            "UPDATE users SET username=?, avatar_choice=?, onboarded=1 WHERE id=?",
+            (new_username, avatar_choice, user['id'])
+        )
+        conn.commit()
+        conn.close()
+        session['username'] = new_username
+        flash(f'Welcome to LingoLeap, {new_username}!', 'success')
+        return redirect(url_for('index'))
+
+    return render_template('onboarding.html', user=user, avatars=AVATARS,
+                           prefill_username=user['username'])
 
 
 # ── MAIN PAGES ───────────────────────────────────────────────────────────────
