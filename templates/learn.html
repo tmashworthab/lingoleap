@@ -244,11 +244,12 @@ function getDistractors(correctWord, field, n=3){
 // ── Question factory ──────────────────────────────────────────────────────────
 function makeQ(type, word, isReview=false){
   const q = {type, word, isReview};
+  const isNepali = LANG_CODE === 'ne';
   if(type==='mc_tl_en'){
     const opts = shuffle([word.translation, ...getDistractors(word,'translation')]);
     q.options = opts; q.correct = word.translation;
     q.prompt = `What does "<strong>${word.word}</strong>" mean?`;
-    q.subtext = word.pronunciation ? `/${word.pronunciation}/` : '';
+    q.subtext = word.pronunciation ? (isNepali ? word.pronunciation : `/${word.pronunciation}/`) : '';
   } else if(type==='mc_en_tl'){
     const opts = shuffle([word.word, ...getDistractors(word,'word')]);
     q.options = opts; q.correct = word.word;
@@ -257,7 +258,7 @@ function makeQ(type, word, isReview=false){
   } else { // type_tl_en
     q.correct = word.translation;
     q.prompt = `Translate "<strong>${word.word}</strong>" to English`;
-    q.subtext = word.pronunciation ? `/${word.pronunciation}/` : '';
+    q.subtext = word.pronunciation ? (isNepali ? word.pronunciation : `/${word.pronunciation}/`) : '';
   }
   return q;
 }
@@ -322,10 +323,12 @@ function renderLearnDots(){
 
 function renderLearnCard(){
   const w = LEVEL_WORDS[learnIdx];
+  const isNepali = LANG_CODE === 'ne';
   document.getElementById('learn-card').innerHTML = `
     <div class="text-xs font-bold uppercase tracking-widest text-violet-400 mb-3">NEW WORD</div>
+    ${isNepali && w.pronunciation ? `<div class="text-3xl text-gray-300 mb-1">${w.pronunciation}</div>` : ''}
     <div class="text-5xl font-extrabold text-gray-900 mb-2">${w.word}</div>
-    ${w.pronunciation ? `<div class="text-violet-400 text-sm italic mb-3">/${w.pronunciation}/</div>` : ''}
+    ${!isNepali && w.pronunciation ? `<div class="text-violet-400 text-sm italic mb-3">/${w.pronunciation}/</div>` : ''}
     <div class="text-2xl font-bold text-gray-600 mb-4">${w.translation}</div>
     ${w.example ? `<div class="bg-violet-50 rounded-xl px-4 py-2 text-gray-500 text-sm italic">"${w.example}"</div>` : ''}
     ${w.isReview===true ? '<div class="mt-3 text-xs text-amber-500 font-semibold">Review word</div>' : ''}
