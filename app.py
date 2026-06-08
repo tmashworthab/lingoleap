@@ -335,11 +335,16 @@ def google_callback():
 # ── ONBOARDING ───────────────────────────────────────────────────────────────
 
 AVATARS = [
-    {'id': 1, 'name': 'The Scholar',  'file': 'avatar1.png'},
-    {'id': 2, 'name': 'The Traveller','file': 'avatar2.png'},
-    {'id': 3, 'name': 'The Professor','file': 'avatar3.png'},
-    {'id': 4, 'name': 'The Writer',   'file': 'avatar4.png'},
-    {'id': 5, 'name': 'The Academic', 'file': 'avatar5.png'},
+    {'id':  1, 'name': 'The Scholar',   'file': 'avatar1.png'},
+    {'id':  2, 'name': 'The Traveller', 'file': 'avatar2.png'},
+    {'id':  3, 'name': 'The Professor', 'file': 'avatar3.png'},
+    {'id':  4, 'name': 'The Writer',    'file': 'avatar4.png'},
+    {'id':  5, 'name': 'The Academic',  'file': 'avatar5.png'},
+    {'id':  6, 'name': 'Explorer',      'file': 'avatar6.png'},
+    {'id':  7, 'name': 'Adventurer',    'file': 'avatar7.png'},
+    {'id':  8, 'name': 'Dreamer',       'file': 'avatar8.png'},
+    {'id':  9, 'name': 'Pioneer',       'file': 'avatar9.png'},
+    {'id': 10, 'name': 'Visionary',     'file': 'avatar10.png'},
 ]
 
 @app.route('/onboarding', methods=['GET', 'POST'])
