@@ -1,5 +1,6 @@
 import os
 import json
+import math
 import bcrypt
 import secrets
 import smtplib
@@ -468,6 +469,24 @@ def course_detail(course_id):
     user_rating = get_user_rating(conn, course_id, user['id'] if user else None)
     enrolled = is_enrolled(conn, course_id, user['id'] if user else None)
 
+    total_levels = max(1, math.ceil(course['item_count'] / WORDS_PER_LEVEL))
+    completed_levels = set()
+    level_stars = {}
+    if user:
+        for r in conn.execute(
+            "SELECT level_number, stars FROM user_level_progress WHERE user_id=? AND course_id=? AND completed=1",
+            (user['id'], course_id)
+        ).fetchall():
+            completed_levels.add(r['level_number'])
+            level_stars[r['level_number']] = r['stars']
+
+    # First incomplete level (= the one to play next)
+    next_level = total_levels
+    for lvl in range(1, total_levels + 1):
+        if lvl not in completed_levels:
+            next_level = lvl
+            break
+
     conn.close()
     return render_template('course_detail.html',
                            course=course,
@@ -476,7 +495,11 @@ def course_detail(course_id):
                            rating_info=rating_info,
                            user_rating=user_rating,
                            enrolled=enrolled,
-                           user=user)
+                           user=user,
+                           total_levels=total_levels,
+                           completed_levels=completed_levels,
+                           level_stars=level_stars,
+                           next_level=next_level)
 
 
 @app.route('/courses/<int:course_id>/enroll', methods=['POST'])
@@ -522,62 +545,126 @@ def rate_course(course_id):
 
 # ── LEARNING ─────────────────────────────────────────────────────────────────
 
+WORDS_PER_LEVEL = 5
+
+
+def _auto_enroll(conn, course_id, user_id):
+    if not is_enrolled(conn, course_id, user_id):
+        conn.execute("INSERT OR IGNORE INTO enrollments (course_id, user_id) VALUES (?,?)",
+                     (course_id, user_id))
+        conn.execute("UPDATE courses SET enrollment_count = enrollment_count + 1 WHERE id=?",
+                     (course_id,))
+        conn.commit()
+
+
 @app.route('/learn/<int:course_id>')
 @login_required
 def learn(course_id):
+    """Redirect to the first incomplete level (or last level if all done)."""
+    user = current_user()
+    conn = get_db()
+    course = conn.execute("SELECT * FROM courses WHERE id=?", (course_id,)).fetchone()
+    if not course:
+        conn.close()
+        abort(404)
+    _auto_enroll(conn, course_id, user['id'])
+    total_levels = max(1, math.ceil(course['item_count'] / WORDS_PER_LEVEL))
+    completed = {r['level_number'] for r in conn.execute(
+        "SELECT level_number FROM user_level_progress WHERE user_id=? AND course_id=? AND completed=1",
+        (user['id'], course_id)
+    ).fetchall()}
+    conn.close()
+    for lvl in range(1, total_levels + 1):
+        if lvl not in completed:
+            return redirect(url_for('learn_level', course_id=course_id, level_num=lvl))
+    return redirect(url_for('learn_level', course_id=course_id, level_num=total_levels))
+
+
+@app.route('/learn/<int:course_id>/level/<int:level_num>')
+@login_required
+def learn_level(course_id, level_num):
+    user = current_user()
     conn = get_db()
     course = conn.execute("""
-        SELECT c.*, l.name as lang_name, l.flag_emoji
+        SELECT c.*, l.name as lang_name, l.flag_emoji, l.code as lang_code
         FROM courses c JOIN languages l ON c.language_id = l.id
         WHERE c.id=?
     """, (course_id,)).fetchone()
-
     if not course:
+        conn.close()
         abort(404)
+    _auto_enroll(conn, course_id, user['id'])
 
-    user = current_user()
+    total_levels = max(1, math.ceil(course['item_count'] / WORDS_PER_LEVEL))
+    level_num = max(1, min(level_num, total_levels))
 
-    # Auto-enroll if not enrolled
-    if not is_enrolled(conn, course_id, user['id']):
-        conn.execute(
-            "INSERT OR IGNORE INTO enrollments (course_id, user_id) VALUES (?,?)",
-            (course_id, user['id'])
-        )
-        conn.execute(
-            "UPDATE courses SET enrollment_count = enrollment_count + 1 WHERE id=?",
-            (course_id,)
-        )
-        conn.commit()
+    # Words for this level
+    offset = (level_num - 1) * WORDS_PER_LEVEL
+    level_words = conn.execute(
+        "SELECT * FROM vocab_items WHERE course_id=? ORDER BY position LIMIT ? OFFSET ?",
+        (course_id, WORDS_PER_LEVEL, offset)
+    ).fetchall()
 
-    vocab = conn.execute(
+    # All course words (for distractors)
+    all_words = conn.execute(
         "SELECT * FROM vocab_items WHERE course_id=? ORDER BY position",
         (course_id,)
     ).fetchall()
 
-    # Get user's prior progress
-    progress = {}
-    rows = conn.execute(
+    # User progress on all words
+    progress_rows = conn.execute(
         "SELECT vocab_item_id, correct_count, incorrect_count FROM user_progress WHERE user_id=?",
         (user['id'],)
     ).fetchall()
-    for r in rows:
-        progress[r['vocab_item_id']] = {
-            'correct': r['correct_count'],
-            'incorrect': r['incorrect_count']
-        }
+    progress = {r['vocab_item_id']: {'correct': r['correct_count'], 'incorrect': r['incorrect_count']}
+                for r in progress_rows}
 
-    vocab_json = json.dumps([{
-        'id': v['id'],
-        'word': v['word'],
-        'translation': v['translation'],
-        'example': v['example_sentence'] or '',
-        'pronunciation': v['pronunciation'] or '',
-        'correct': progress.get(v['id'], {}).get('correct', 0),
-        'incorrect': progress.get(v['id'], {}).get('incorrect', 0),
-    } for v in vocab])
+    # Completed levels
+    completed_levels = {r['level_number'] for r in conn.execute(
+        "SELECT level_number FROM user_level_progress WHERE user_id=? AND course_id=? AND completed=1",
+        (user['id'], course_id)
+    ).fetchall()}
+
+    # Review words: up to 3 wrong words from completed levels
+    review_words = []
+    if completed_levels:
+        completed_word_ids = set()
+        for cl in completed_levels:
+            cl_offset = (cl - 1) * WORDS_PER_LEVEL
+            for w in conn.execute(
+                "SELECT id FROM vocab_items WHERE course_id=? ORDER BY position LIMIT ? OFFSET ?",
+                (course_id, WORDS_PER_LEVEL, cl_offset)
+            ).fetchall():
+                completed_word_ids.add(w['id'])
+        # Sort by most incorrect
+        review_candidates = sorted(
+            [w for w in all_words if w['id'] in completed_word_ids],
+            key=lambda w: progress.get(w['id'], {}).get('incorrect', 0),
+            reverse=True
+        )
+        review_words = review_candidates[:3]
 
     conn.close()
-    return render_template('learn.html', course=course, vocab_json=vocab_json, user=user)
+
+    def word_to_dict(w):
+        return {
+            'id': w['id'], 'word': w['word'], 'translation': w['translation'],
+            'example': w['example_sentence'] or '', 'pronunciation': w['pronunciation'] or '',
+            'incorrect': progress.get(w['id'], {}).get('incorrect', 0),
+            'correct':   progress.get(w['id'], {}).get('correct',   0),
+        }
+
+    return render_template('learn.html',
+        course=course,
+        level_num=level_num,
+        total_levels=total_levels,
+        is_completed=(level_num in completed_levels),
+        completed_levels=list(completed_levels),
+        level_words_json=json.dumps([word_to_dict(w) for w in level_words]),
+        all_words_json=json.dumps([word_to_dict(w) for w in all_words]),
+        review_words_json=json.dumps([word_to_dict(w) for w in review_words]),
+        user=user,
+    )
 
 
 @app.route('/api/progress', methods=['POST'])
@@ -586,6 +673,7 @@ def update_progress():
     data = request.get_json()
     vocab_item_id = data.get('vocab_item_id')
     correct = data.get('correct', False)
+    xp_gain = int(data.get('xp_gain', 10))
     course_id = data.get('course_id')
 
     user = current_user()
@@ -598,7 +686,7 @@ def update_progress():
             ON CONFLICT(user_id, vocab_item_id)
             DO UPDATE SET correct_count = correct_count + 1, last_seen = CURRENT_TIMESTAMP
         """, (user['id'], vocab_item_id))
-        conn.execute("UPDATE users SET xp = xp + 10 WHERE id=?", (user['id'],))
+        conn.execute("UPDATE users SET xp = xp + ? WHERE id=?", (xp_gain, user['id']))
     else:
         conn.execute("""
             INSERT INTO user_progress (user_id, vocab_item_id, incorrect_count, last_seen)
@@ -607,18 +695,30 @@ def update_progress():
             DO UPDATE SET incorrect_count = incorrect_count + 1, last_seen = CURRENT_TIMESTAMP
         """, (user['id'], vocab_item_id))
 
-    # Update enrollment completed_items
-    if course_id and correct:
-        conn.execute("""
-            UPDATE enrollments SET completed_items = (
-                SELECT COUNT(DISTINCT up.vocab_item_id)
-                FROM user_progress up
-                JOIN vocab_items vi ON up.vocab_item_id = vi.id
-                WHERE up.user_id=? AND vi.course_id=? AND up.correct_count > 0
-            )
-            WHERE user_id=? AND course_id=?
-        """, (user['id'], course_id, user['id'], course_id))
+    conn.commit()
+    new_xp = conn.execute("SELECT xp FROM users WHERE id=?", (user['id'],)).fetchone()['xp']
+    conn.close()
+    return jsonify({'ok': True, 'xp': new_xp})
 
+
+@app.route('/api/level-complete', methods=['POST'])
+@login_required
+def level_complete():
+    data = request.get_json()
+    course_id  = data.get('course_id')
+    level_num  = data.get('level_num')
+    stars      = data.get('stars', 1)
+    xp_bonus   = data.get('xp_bonus', 50)
+
+    user = current_user()
+    conn = get_db()
+    conn.execute("""
+        INSERT INTO user_level_progress (user_id, course_id, level_number, completed, stars, completed_at)
+        VALUES (?,?,?,1,?,CURRENT_TIMESTAMP)
+        ON CONFLICT(user_id, course_id, level_number)
+        DO UPDATE SET completed=1, stars=MAX(user_level_progress.stars, EXCLUDED.stars), completed_at=CURRENT_TIMESTAMP
+    """, (user['id'], course_id, level_num, stars))
+    conn.execute("UPDATE users SET xp = xp + ? WHERE id=?", (xp_bonus, user['id']))
     conn.commit()
     new_xp = conn.execute("SELECT xp FROM users WHERE id=?", (user['id'],)).fetchone()['xp']
     conn.close()
@@ -738,6 +838,55 @@ def profile():
                            level=level,
                            xp_in_level=xp_in_level,
                            xp_to_next=xp_to_next)
+
+
+# ── LEADERBOARD ───────────────────────────────────────────────────────────────
+
+def xp_tier(xp, rank=None):
+    if rank and rank <= 5:
+        return 'honour'
+    if xp >= 5000: return 'platinum'
+    if xp >= 2000: return 'gold'
+    if xp >= 500:  return 'silver'
+    return 'bronze'
+
+TIER_META = {
+    'honour':   {'label': 'Roll of Honour', 'icon': '👑', 'color': 'from-yellow-400 to-amber-500',  'text': 'text-amber-700',  'bg': 'bg-amber-50',  'border': 'border-amber-300'},
+    'platinum': {'label': 'Platinum',        'icon': '💎', 'color': 'from-cyan-400 to-blue-500',     'text': 'text-cyan-700',   'bg': 'bg-cyan-50',   'border': 'border-cyan-300'},
+    'gold':     {'label': 'Gold',            'icon': '🥇', 'color': 'from-yellow-300 to-yellow-500', 'text': 'text-yellow-700', 'bg': 'bg-yellow-50', 'border': 'border-yellow-300'},
+    'silver':   {'label': 'Silver',          'icon': '🥈', 'color': 'from-gray-300 to-gray-400',     'text': 'text-gray-600',   'bg': 'bg-gray-50',   'border': 'border-gray-300'},
+    'bronze':   {'label': 'Bronze',          'icon': '🥉', 'color': 'from-orange-300 to-orange-500', 'text': 'text-orange-700', 'bg': 'bg-orange-50', 'border': 'border-orange-300'},
+}
+
+@app.route('/leaderboard')
+def leaderboard():
+    conn = get_db()
+    all_users = conn.execute(
+        "SELECT id, username, xp, avatar_color FROM users ORDER BY xp DESC"
+    ).fetchall()
+    conn.close()
+
+    ranked = []
+    for i, u in enumerate(all_users, 1):
+        tier = xp_tier(u['xp'], rank=i)
+        ranked.append({
+            'rank': i, 'id': u['id'], 'username': u['username'],
+            'xp': u['xp'], 'avatar_color': u['avatar_color'],
+            'tier': tier, 'meta': TIER_META[tier],
+        })
+
+    honour = [u for u in ranked if u['tier'] == 'honour']
+    platinum = [u for u in ranked if u['tier'] == 'platinum']
+    gold     = [u for u in ranked if u['tier'] == 'gold']
+    silver   = [u for u in ranked if u['tier'] == 'silver']
+    bronze   = [u for u in ranked if u['tier'] == 'bronze']
+
+    user = current_user()
+    my_rank = next((u for u in ranked if user and u['id'] == user['id']), None)
+
+    return render_template('leaderboard.html',
+        honour=honour, platinum=platinum, gold=gold, silver=silver, bronze=bronze,
+        tier_meta=TIER_META, user=user, my_rank=my_rank)
 
 
 # ── ERROR HANDLERS ────────────────────────────────────────────────────────────

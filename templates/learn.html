@@ -1,314 +1,557 @@
 {% extends "base.html" %}
-{% block title %}Learning: {{ course.title }} — LingoLeap{% endblock %}
+{% block title %}Level {{ level_num }} — {{ course.title }} — LingoLeap{% endblock %}
 
 {% block extra_head %}
 <style>
-  .flashcard-scene { perspective: 1000px; }
-  .flashcard-inner {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-    transform-style: preserve-3d;
-  }
-  .flashcard-inner.flipped { transform: rotateY(180deg); }
-  .flashcard-front, .flashcard-back {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-    border-radius: 1.5rem;
-  }
-  .flashcard-back { transform: rotateY(180deg); }
+/* ── Layout ────────────────────────────────────────────────────────────────── */
+.phase { display:none; }
+.phase.active { display:flex; flex-direction:column; }
 
-  @keyframes shake {
-    0%,100%{transform:translateX(0)}
-    20%{transform:translateX(-8px)}
-    40%{transform:translateX(8px)}
-    60%{transform:translateX(-6px)}
-    80%{transform:translateX(6px)}
-  }
-  .shake { animation: shake 0.4s ease; }
+/* ── Hearts ────────────────────────────────────────────────────────────────── */
+.heart { font-size:1.6rem; transition:all .3s; }
+.heart.lost { filter:grayscale(1) opacity(.35); transform:scale(.85); }
 
-  @keyframes pop {
-    0%{transform:scale(1)}
-    50%{transform:scale(1.08)}
-    100%{transform:scale(1)}
-  }
-  .pop { animation: pop 0.3s ease; }
+/* ── Cards ─────────────────────────────────────────────────────────────────── */
+.word-card {
+  background:white; border-radius:1.5rem; padding:2.5rem 2rem;
+  box-shadow:0 8px 32px rgba(124,58,237,.12);
+  text-align:center; width:100%;
+}
 
-  @keyframes confetti-fall {
-    0%   { transform: translateY(-20px) rotate(0deg); opacity: 1; }
-    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
-  }
-  .confetti-piece {
-    position: fixed;
-    width: 10px;
-    height: 10px;
-    animation: confetti-fall linear forwards;
-    border-radius: 2px;
-  }
+/* ── Option buttons ─────────────────────────────────────────────────────────── */
+.opt-btn {
+  width:100%; text-align:left; padding:.9rem 1.2rem;
+  border:2.5px solid #e5e7eb; border-radius:.9rem; background:white;
+  font-size:.95rem; font-weight:600; cursor:pointer;
+  transition:all .15s; color:#374151;
+}
+.opt-btn:hover:not(:disabled) { border-color:#7C3AED; background:#f5f3ff; color:#5B21B6; }
+.opt-btn.correct   { border-color:#10b981; background:#ecfdf5; color:#065f46; }
+.opt-btn.incorrect { border-color:#ef4444; background:#fef2f2; color:#991b1b; }
+.opt-btn.reveal    { border-color:#10b981; background:#ecfdf5; color:#065f46; }
+
+/* ── Shake animation ─────────────────────────────────────────────────────────── */
+@keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-8px)} 40%{transform:translateX(8px)} 60%{transform:translateX(-6px)} 80%{transform:translateX(6px)} }
+.shake { animation:shake .4s ease; }
+
+/* ── Confetti ────────────────────────────────────────────────────────────────── */
+@keyframes fall { 0%{transform:translateY(-20px) rotate(0deg);opacity:1} 100%{transform:translateY(100vh) rotate(720deg);opacity:0} }
+.confetti-piece { position:fixed; width:10px; height:10px; border-radius:2px; animation:fall linear forwards; pointer-events:none; }
+
+/* ── Stars ──────────────────────────────────────────────────────────────────── */
+.star { font-size:2rem; transition:all .4s; filter:grayscale(1) opacity(.3); }
+.star.earned { filter:none; transform:scale(1.2); }
+
+/* ── Progress bar ────────────────────────────────────────────────────────────── */
+#practice-bar { transition:width .4s ease; }
+
+/* ── Type input ──────────────────────────────────────────────────────────────── */
+#type-input {
+  width:100%; border:2.5px solid #e5e7eb; border-radius:.9rem; padding:.9rem 1.2rem;
+  font-size:1rem; font-weight:600; outline:none; transition:border-color .2s;
+}
+#type-input:focus { border-color:#7C3AED; }
+#type-input.correct   { border-color:#10b981; background:#ecfdf5; }
+#type-input.incorrect { border-color:#ef4444; background:#fef2f2; }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="min-h-screen bg-gradient-to-br from-violet-50 via-white to-pink-50 py-8 px-4">
-  <div class="max-w-2xl mx-auto">
+<div class="min-h-screen bg-gradient-to-br from-violet-50 via-white to-pink-50 py-6 px-4">
+<div class="max-w-xl mx-auto">
 
-    <!-- Header -->
-    <div class="flex items-center justify-between mb-6">
-      <a href="{{ url_for('course_detail', course_id=course.id) }}"
-         class="flex items-center gap-2 text-gray-500 hover:text-gray-800 transition-colors text-sm font-medium">
-        ← Back
-      </a>
-      <div class="text-center">
-        <div class="text-sm font-semibold text-gray-700">{{ course.flag_emoji }} {{ course.title }}</div>
-      </div>
-      <div id="xp-badge" class="bg-amber-100 text-amber-700 text-xs font-bold px-3 py-1 rounded-full">
-        ⚡ XP: <span id="xp-count">{{ user.xp }}</span>
-      </div>
+<!-- ═══════════════════════════════════════════ INTRO PHASE ══ -->
+<div id="phase-intro" class="phase active items-center text-center gap-6 py-8">
+  <a href="{{ url_for('course_detail', course_id=course.id) }}" class="self-start text-gray-400 hover:text-gray-600 text-sm">← Back</a>
+  <div class="text-6xl">{{ course.flag_emoji }}</div>
+  <div class="bg-violet-100 text-violet-700 font-extrabold px-5 py-2 rounded-full text-sm tracking-wide">
+    {{ course.lang_name }} · Level {{ level_num }} of {{ total_levels }}
+  </div>
+  <h1 class="text-3xl font-extrabold text-gray-900">{{ course.title }}</h1>
+  <div class="bg-white rounded-2xl shadow p-6 w-full">
+    <div class="text-4xl font-black text-violet-600 mb-1" id="intro-word-count">5</div>
+    <div class="text-gray-500 text-sm">new words to learn, then a quiz</div>
+    <div class="flex justify-center gap-4 mt-4 text-sm text-gray-500">
+      <span>❤️ 3 lives</span>
+      <span>·</span>
+      <span>⚡ XP on every correct answer</span>
     </div>
+  </div>
+  {% if is_completed %}
+  <div class="bg-emerald-50 border border-emerald-200 rounded-xl px-5 py-3 text-sm text-emerald-700 font-medium w-full text-center">
+    You've already passed this level! Practice it again anytime.
+  </div>
+  {% endif %}
+  <button onclick="startLearn()"
+    class="w-full bg-violet-600 hover:bg-violet-700 text-white font-extrabold py-4 rounded-2xl text-lg transition-colors shadow-lg">
+    {% if is_completed %}Practice again{% else %}Start learning{% endif %}
+  </button>
+</div>
 
-    <!-- Progress bar -->
-    <div class="mb-6">
-      <div class="flex justify-between text-xs text-gray-500 mb-1.5">
-        <span id="progress-text">Card 1 of <span id="total-count">0</span></span>
-        <span id="score-text">✅ <span id="correct-count">0</span> &nbsp; ❌ <span id="wrong-count">0</span></span>
-      </div>
-      <div class="h-3 bg-gray-200 rounded-full overflow-hidden">
-        <div id="progress-bar" class="h-full bg-gradient-to-r from-violet-500 to-pink-500 rounded-full transition-all duration-500"
-             style="width: 0%"></div>
-      </div>
+<!-- ═══════════════════════════════════════════ LEARN PHASE ══ -->
+<div id="phase-learn" class="phase gap-5">
+  <div class="flex items-center justify-between">
+    <button onclick="showIntro()" class="text-gray-400 hover:text-gray-600 text-sm">← Back</button>
+    <div class="flex gap-1.5" id="learn-dots"></div>
+    <div class="text-xs text-gray-400" id="learn-counter"></div>
+  </div>
+
+  <div class="word-card" id="learn-card">
+    <!-- populated by JS -->
+  </div>
+
+  <button onclick="nextLearn()" id="learn-next-btn"
+    class="w-full bg-violet-600 hover:bg-violet-700 text-white font-extrabold py-4 rounded-2xl text-lg transition-colors">
+    Got it!
+  </button>
+</div>
+
+<!-- ══════════════════════════════════════════ PRACTICE PHASE ══ -->
+<div id="phase-practice" class="phase gap-5">
+  <!-- Top bar -->
+  <div class="flex items-center gap-3">
+    <button onclick="confirmExit()" class="text-gray-400 hover:text-gray-600 font-bold text-xl leading-none">×</button>
+    <div class="flex-1 h-3 bg-gray-200 rounded-full overflow-hidden">
+      <div id="practice-bar" class="h-full bg-gradient-to-r from-violet-500 to-pink-500 rounded-full" style="width:0%"></div>
     </div>
+    <div class="flex gap-1" id="hearts-display"></div>
+  </div>
 
-    <!-- Flashcard -->
-    <div id="card-container" class="flashcard-scene w-full h-72 mb-6 cursor-pointer" onclick="flipCard()">
-      <div class="flashcard-inner" id="flashcard-inner">
-        <!-- Front -->
-        <div class="flashcard-front bg-white shadow-2xl flex flex-col items-center justify-center p-8 select-none">
-          <div class="text-xs font-bold uppercase tracking-widest text-violet-400 mb-4">Target Language</div>
-          <div id="card-word" class="text-4xl md:text-5xl font-extrabold text-gray-900 text-center leading-tight mb-3"></div>
-          <div id="card-pronunciation" class="text-violet-400 text-sm italic mb-4"></div>
-          <div class="mt-auto flex items-center gap-2 text-gray-400 text-sm">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5"/>
-            </svg>
-            Click to reveal
-          </div>
-        </div>
-        <!-- Back -->
-        <div class="flashcard-back bg-gradient-to-br from-violet-600 to-pink-600 shadow-2xl flex flex-col items-center justify-center p-8 select-none">
-          <div class="text-xs font-bold uppercase tracking-widest text-white/60 mb-4">Translation</div>
-          <div id="card-translation" class="text-3xl md:text-4xl font-extrabold text-white text-center leading-tight mb-4"></div>
-          <div id="card-example" class="text-white/70 text-sm italic text-center max-w-xs leading-relaxed"></div>
-        </div>
-      </div>
-    </div>
+  <!-- Question area -->
+  <div id="question-area" class="flex flex-col gap-4">
+    <!-- populated by JS -->
+  </div>
 
-    <!-- Hint text before flip -->
-    <div id="hint-text" class="text-center text-gray-400 text-sm mb-4">
-      Tap the card to reveal the translation
-    </div>
-
-    <!-- Answer buttons (hidden until flipped) -->
-    <div id="answer-buttons" class="hidden grid grid-cols-2 gap-4 mb-6">
-      <button onclick="markAnswer(false)"
-              class="flex items-center justify-center gap-2 bg-red-100 hover:bg-red-200 text-red-700 font-bold py-4 rounded-2xl text-lg transition-all hover:scale-105 active:scale-95">
-        ❌ Missed it
-      </button>
-      <button onclick="markAnswer(true)"
-              class="flex items-center justify-center gap-2 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 font-bold py-4 rounded-2xl text-lg transition-all hover:scale-105 active:scale-95">
-        ✅ Got it!
-      </button>
-    </div>
-
-    <!-- Keyboard hint -->
-    <div id="keyboard-hint" class="text-center text-xs text-gray-400">
-      Keyboard: <kbd class="bg-gray-100 px-2 py-0.5 rounded text-gray-600">Space</kbd> flip &nbsp;·&nbsp;
-      <kbd class="bg-gray-100 px-2 py-0.5 rounded text-gray-600">←</kbd> missed &nbsp;·&nbsp;
-      <kbd class="bg-gray-100 px-2 py-0.5 rounded text-gray-600">→</kbd> got it
-    </div>
-
-    <!-- Completion screen (hidden) -->
-    <div id="completion-screen" class="hidden text-center py-8">
-      <div class="text-8xl mb-6">🎉</div>
-      <h2 class="text-4xl font-extrabold text-gray-900 mb-3">Round complete!</h2>
-      <p class="text-gray-500 text-lg mb-6">You've been through all the cards.</p>
-      <div class="bg-white rounded-2xl shadow p-6 mb-8 max-w-sm mx-auto">
-        <div class="grid grid-cols-3 gap-4 text-center">
-          <div>
-            <div class="text-3xl font-black text-emerald-500" id="final-correct">0</div>
-            <div class="text-xs text-gray-500 mt-1">Correct</div>
-          </div>
-          <div>
-            <div class="text-3xl font-black text-red-400" id="final-wrong">0</div>
-            <div class="text-xs text-gray-500 mt-1">Missed</div>
-          </div>
-          <div>
-            <div class="text-3xl font-black text-amber-500" id="final-xp">+0</div>
-            <div class="text-xs text-gray-500 mt-1">XP earned</div>
-          </div>
-        </div>
-      </div>
-      <div class="flex flex-col sm:flex-row gap-4 justify-center">
-        <button onclick="restartSession()"
-                class="bg-violet-600 hover:bg-violet-700 text-white font-bold px-8 py-3 rounded-full transition-colors">
-          🔄 Go again
-        </button>
-        <a href="{{ url_for('course_detail', course_id=course.id) }}"
-           class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold px-8 py-3 rounded-full transition-colors">
-          ← Back to course
-        </a>
-        <a href="{{ url_for('courses') }}"
-           class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-8 py-3 rounded-full transition-colors">
-          Find more courses
-        </a>
-      </div>
-    </div>
-
+  <!-- Feedback / continue button (hidden until answered) -->
+  <div id="feedback-bar" class="hidden">
+    <div id="feedback-msg" class="rounded-xl p-4 text-sm font-semibold mb-3"></div>
+    <button onclick="nextQuestion()" id="continue-btn"
+      class="w-full font-extrabold py-3 rounded-2xl text-base transition-colors">
+      Continue
+    </button>
   </div>
 </div>
 
+<!-- ══════════════════════════════════════════ COMPLETE PHASE ══ -->
+<div id="phase-complete" class="phase items-center text-center gap-5 py-8">
+  <div class="text-7xl" id="complete-emoji">🎉</div>
+  <h2 class="text-3xl font-extrabold text-gray-900">Level {{ level_num }} Complete!</h2>
+  <div class="flex gap-3 justify-center" id="stars-row">
+    <span class="star" id="star1">⭐</span>
+    <span class="star" id="star2">⭐</span>
+    <span class="star" id="star3">⭐</span>
+  </div>
+  <div class="bg-white rounded-2xl shadow p-6 w-full grid grid-cols-3 gap-4 text-center">
+    <div><div class="text-3xl font-black text-emerald-500" id="final-correct">0</div><div class="text-xs text-gray-400 mt-1">Correct</div></div>
+    <div><div class="text-3xl font-black text-red-400"     id="final-wrong">0</div><div class="text-xs text-gray-400 mt-1">Errors</div></div>
+    <div><div class="text-3xl font-black text-amber-500"   id="final-xp">+0</div><div class="text-xs text-gray-400 mt-1">XP earned</div></div>
+  </div>
+  <div class="flex flex-col gap-3 w-full">
+    {% if level_num < total_levels %}
+    <a href="{{ url_for('learn_level', course_id=course.id, level_num=level_num+1) }}"
+       class="w-full bg-violet-600 hover:bg-violet-700 text-white font-extrabold py-4 rounded-2xl text-lg text-center transition-colors">
+      Next Level →
+    </a>
+    {% else %}
+    <div class="bg-emerald-100 text-emerald-800 font-bold rounded-xl p-4 text-center">
+      You've completed all levels in this course!
+    </div>
+    {% endif %}
+    <a href="{{ url_for('course_detail', course_id=course.id) }}"
+       class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-3 rounded-2xl text-center transition-colors">
+      Back to course
+    </a>
+    <a href="{{ url_for('leaderboard') }}"
+       class="w-full text-violet-600 hover:text-violet-800 font-semibold py-2 text-sm text-center transition-colors">
+      View leaderboard
+    </a>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ FAILED PHASE ══ -->
+<div id="phase-failed" class="phase items-center text-center gap-5 py-8">
+  <div class="text-7xl">💔</div>
+  <h2 class="text-3xl font-extrabold text-gray-900">Out of hearts!</h2>
+  <p class="text-gray-500">Don't give up — you were so close! Your progress on other levels is safe.</p>
+  <div class="bg-white rounded-2xl shadow p-5 w-full text-sm text-gray-600">
+    <p>💡 <strong>Tip:</strong> Words you got wrong will be asked first when you retry.</p>
+  </div>
+  <div class="flex flex-col gap-3 w-full">
+    <button onclick="retryLevel()"
+      class="w-full bg-violet-600 hover:bg-violet-700 text-white font-extrabold py-4 rounded-2xl text-lg transition-colors">
+      Try again
+    </button>
+    <button onclick="startLearn()"
+      class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-3 rounded-2xl transition-colors">
+      Re-learn words first
+    </button>
+    <a href="{{ url_for('course_detail', course_id=course.id) }}"
+       class="w-full text-gray-400 hover:text-gray-600 font-medium py-2 text-sm text-center">
+      Back to course
+    </a>
+  </div>
+</div>
+
+</div><!-- /max-w-xl -->
+</div><!-- /min-h-screen -->
+
 <script>
-const VOCAB = {{ vocab_json|safe }};
-const COURSE_ID = {{ course.id }};
-let cards = [...VOCAB];
-let currentIndex = 0;
-let correctCount = 0;
-let wrongCount = 0;
-let isFlipped = false;
-let xpEarned = 0;
-const startXp = {{ user.xp }};
+// ── Data ──────────────────────────────────────────────────────────────────────
+const LEVEL_WORDS   = {{ level_words_json|safe }};
+const ALL_WORDS     = {{ all_words_json|safe }};
+const REVIEW_WORDS  = {{ review_words_json|safe }};
+const COURSE_ID     = {{ course.id }};
+const LEVEL_NUM     = {{ level_num }};
+const LANG_NAME     = "{{ course.lang_name }}";
+const LANG_CODE     = "{{ course.lang_code }}";
+const IS_COMPLETED  = {{ 'true' if is_completed else 'false' }};
 
-function shuffle(arr) {
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
+// ── Game state ────────────────────────────────────────────────────────────────
+let hearts        = 3;
+let learnIdx      = 0;
+let questionQueue = [];
+let retrySet      = new Set();     // word ids that were wrong this attempt
+let answeredCount = 0;
+let totalQs       = 0;
+let correctCount  = 0;
+let wrongCount    = 0;
+let xpEarned      = 0;
+let answered      = false;        // has current question been answered?
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function show(id)  { document.querySelectorAll('.phase').forEach(p => p.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+function shuffle(a){ for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+
+function editDist(a,b){
+  a=a.toLowerCase().trim(); b=b.toLowerCase().trim();
+  const d=Array.from({length:a.length+1},(_,i)=>Array.from({length:b.length+1},(_,j)=>i===0?j:j===0?i:0));
+  for(let i=1;i<=a.length;i++) for(let j=1;j<=b.length;j++) d[i][j]=a[i-1]===b[j-1]?d[i-1][j-1]:1+Math.min(d[i-1][j],d[i][j-1],d[i-1][j-1]);
+  return d[a.length][b.length];
+}
+function isClose(typed, correct){
+  const t=typed.toLowerCase().trim(), c=correct.toLowerCase().trim();
+  if(t===c) return true;
+  const maxD = c.length>8?2:c.length>4?1:0;
+  return editDist(t,c)<=maxD;
+}
+
+function getDistractors(correctWord, field, n=3){
+  const pool = ALL_WORDS.filter(w=>w.id!==correctWord.id);
+  shuffle(pool);
+  return pool.slice(0,n).map(w=>w[field]);
+}
+
+// ── Question factory ──────────────────────────────────────────────────────────
+function makeQ(type, word, isReview=false){
+  const q = {type, word, isReview};
+  if(type==='mc_tl_en'){
+    const opts = shuffle([word.translation, ...getDistractors(word,'translation')]);
+    q.options = opts; q.correct = word.translation;
+    q.prompt = `What does "<strong>${word.word}</strong>" mean?`;
+    q.subtext = word.pronunciation ? `/${word.pronunciation}/` : '';
+  } else if(type==='mc_en_tl'){
+    const opts = shuffle([word.word, ...getDistractors(word,'word')]);
+    q.options = opts; q.correct = word.word;
+    q.prompt = `How do you say "<strong>${word.translation}</strong>" in ${LANG_NAME}?`;
+    q.subtext = '';
+  } else { // type_tl_en
+    q.correct = word.translation;
+    q.prompt = `Translate "<strong>${word.word}</strong>" to English`;
+    q.subtext = word.pronunciation ? `/${word.pronunciation}/` : '';
   }
-  return arr;
+  return q;
 }
 
-function init() {
-  shuffle(cards);
-  document.getElementById('total-count').textContent = cards.length;
-  loadCard(0);
+function buildQueue(prioritiseWrong=false){
+  // Sort level words: most wrong first if retrying
+  const words = [...LEVEL_WORDS].sort((a,b)=>{
+    if(prioritiseWrong){
+      const aw = retrySet.has(a.id)?1:0, bw = retrySet.has(b.id)?1:0;
+      if(aw!==bw) return bw-aw;
+    }
+    return b.incorrect - a.incorrect;
+  });
+
+  const qs = [];
+  for(const w of words){
+    const r = Math.random();
+    if(r < 0.35){
+      qs.push(makeQ('mc_tl_en',w));
+      qs.push(makeQ('mc_en_tl',w));
+    } else if(r < 0.65){
+      qs.push(makeQ('mc_tl_en',w));
+      qs.push(makeQ('type_tl_en',w));
+    } else {
+      qs.push(makeQ('mc_en_tl',w));
+      qs.push(makeQ('type_tl_en',w));
+    }
+  }
+
+  // Inject review words (max 2, randomly placed)
+  if(REVIEW_WORDS.length>0){
+    const rv = shuffle([...REVIEW_WORDS]).slice(0,2);
+    for(const rw of rv){
+      const rt = Math.random()<0.5?'mc_tl_en':'mc_en_tl';
+      qs.splice(Math.floor(Math.random()*qs.length), 0, makeQ(rt,rw,true));
+    }
+  }
+
+  shuffle(qs);
+  return qs;
 }
 
-function loadCard(index) {
-  if (index >= cards.length) {
-    showCompletion();
+// ── Phase: Intro ──────────────────────────────────────────────────────────────
+function showIntro(){ show('phase-intro'); }
+
+// ── Phase: Learn ──────────────────────────────────────────────────────────────
+function startLearn(){
+  learnIdx = 0;
+  retrySet.clear();
+  show('phase-learn');
+  renderLearnCard();
+  renderLearnDots();
+}
+
+function renderLearnDots(){
+  const dots = document.getElementById('learn-dots');
+  dots.innerHTML = LEVEL_WORDS.map((_, i) =>
+    `<div class="w-2.5 h-2.5 rounded-full ${i===learnIdx?'bg-violet-600':'bg-gray-200'}"></div>`
+  ).join('');
+  document.getElementById('learn-counter').textContent = `${learnIdx+1} / ${LEVEL_WORDS.length}`;
+}
+
+function renderLearnCard(){
+  const w = LEVEL_WORDS[learnIdx];
+  document.getElementById('learn-card').innerHTML = `
+    <div class="text-xs font-bold uppercase tracking-widest text-violet-400 mb-3">NEW WORD</div>
+    <div class="text-5xl font-extrabold text-gray-900 mb-2">${w.word}</div>
+    ${w.pronunciation ? `<div class="text-violet-400 text-sm italic mb-3">/${w.pronunciation}/</div>` : ''}
+    <div class="text-2xl font-bold text-gray-600 mb-4">${w.translation}</div>
+    ${w.example ? `<div class="bg-violet-50 rounded-xl px-4 py-2 text-gray-500 text-sm italic">"${w.example}"</div>` : ''}
+    ${w.isReview===true ? '<div class="mt-3 text-xs text-amber-500 font-semibold">Review word</div>' : ''}
+  `;
+  renderLearnDots();
+  const btn = document.getElementById('learn-next-btn');
+  btn.textContent = learnIdx < LEVEL_WORDS.length-1 ? 'Got it!' : 'Start quiz!';
+}
+
+function nextLearn(){
+  learnIdx++;
+  if(learnIdx >= LEVEL_WORDS.length){
+    startPractice();
+  } else {
+    renderLearnCard();
+  }
+}
+
+// ── Phase: Practice ───────────────────────────────────────────────────────────
+function startPractice(prioritiseWrong=false){
+  hearts = 3;
+  correctCount = 0; wrongCount = 0; xpEarned = 0;
+  answered = false;
+  questionQueue = buildQueue(prioritiseWrong);
+  totalQs = questionQueue.length;
+  answeredCount = 0;
+  renderHearts();
+  show('phase-practice');
+  showNextQuestion();
+}
+
+function renderHearts(){
+  document.getElementById('hearts-display').innerHTML =
+    [0,1,2].map(i=>`<span class="heart ${i>=hearts?'lost':''}">❤️</span>`).join('');
+}
+
+function updateProgressBar(){
+  const pct = totalQs > 0 ? (answeredCount/totalQs*100) : 0;
+  document.getElementById('practice-bar').style.width = pct+'%';
+}
+
+function showNextQuestion(){
+  if(questionQueue.length === 0){
+    // Add retry questions for wrong words
+    if(retrySet.size > 0){
+      const retryWords = LEVEL_WORDS.filter(w=>retrySet.has(w.id));
+      const extras = [];
+      for(const w of retryWords){
+        extras.push(makeQ(Math.random()<0.5?'mc_tl_en':'type_tl_en', w));
+      }
+      totalQs += extras.length;
+      questionQueue.push(...shuffle(extras));
+      retrySet.clear();
+      showNextQuestion();
+      return;
+    }
+    completeLevel();
     return;
   }
-  isFlipped = false;
-  const inner = document.getElementById('flashcard-inner');
-  inner.classList.remove('flipped');
 
-  const card = cards[index];
-  document.getElementById('card-word').textContent = card.word;
-  document.getElementById('card-pronunciation').textContent = card.pronunciation ? `/${card.pronunciation}/` : '';
-  document.getElementById('card-translation').textContent = card.translation;
-  document.getElementById('card-example').textContent = card.example ? `"${card.example}"` : '';
-
-  document.getElementById('hint-text').classList.remove('hidden');
-  document.getElementById('answer-buttons').classList.add('hidden');
-  document.getElementById('keyboard-hint').classList.remove('hidden');
-
-  const pct = (index / cards.length * 100).toFixed(1);
-  document.getElementById('progress-bar').style.width = pct + '%';
-  document.getElementById('progress-text').innerHTML = `Card ${index + 1} of <span id="total-count">${cards.length}</span>`;
+  answered = false;
+  const q = questionQueue.shift();
+  renderQuestion(q);
+  hideFeedback();
 }
 
-function flipCard() {
-  if (isFlipped) return;
-  isFlipped = true;
-  document.getElementById('flashcard-inner').classList.add('flipped');
-  document.getElementById('hint-text').classList.add('hidden');
-  document.getElementById('answer-buttons').classList.remove('hidden');
-}
+function renderQuestion(q){
+  const area = document.getElementById('question-area');
+  let html = `
+    <div class="text-xs font-bold uppercase tracking-widest text-gray-400 mb-1">
+      ${q.isReview ? '🔄 Review — ' : ''}${q.type==='mc_en_tl'?'Choose the '+LANG_NAME+' translation':'Translate to English'}
+    </div>
+    <div class="word-card mb-2">
+      <div class="text-sm text-gray-400 mb-2">${q.prompt}</div>
+      ${q.subtext ? `<div class="text-violet-400 text-xs italic">${q.subtext}</div>` : ''}
+    </div>
+  `;
 
-function markAnswer(correct) {
-  const card = cards[currentIndex];
-  if (correct) {
-    correctCount++;
-    xpEarned += 10;
-    document.getElementById('correct-count').textContent = correctCount;
-    document.getElementById('card-container').classList.add('pop');
-    setTimeout(() => document.getElementById('card-container').classList.remove('pop'), 300);
+  if(q.type.startsWith('mc_')){
+    html += `<div class="grid grid-cols-1 gap-2" id="options">`;
+    for(const opt of q.options){
+      const safe = opt.replace(/"/g,'&quot;');
+      html += `<button class="opt-btn" onclick="checkMC(this,'${safe}','${q.correct.replace(/'/g,"\\'")}')">${opt}</button>`;
+    }
+    html += `</div>`;
   } else {
-    wrongCount++;
-    document.getElementById('wrong-count').textContent = wrongCount;
-    document.getElementById('card-container').classList.add('shake');
-    setTimeout(() => document.getElementById('card-container').classList.remove('shake'), 400);
+    html += `
+      <input id="type-input" type="text" placeholder="Type your answer in English…" autocomplete="off"
+             onkeydown="if(event.key==='Enter')checkType('${q.correct.replace(/'/g,"\\'")}')">
+      <button onclick="checkType('${q.correct.replace(/'/g,"\\'")}');void 0"
+        class="w-full bg-violet-600 hover:bg-violet-700 text-white font-bold py-3 rounded-xl transition-colors mt-1">
+        Check
+      </button>
+    `;
   }
 
-  document.getElementById('score-text').innerHTML =
-    `✅ <span id="correct-count">${correctCount}</span> &nbsp; ❌ <span id="wrong-count">${wrongCount}</span>`;
-
-  // Save progress to server
-  fetch('/api/progress', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ vocab_item_id: card.id, correct, course_id: COURSE_ID })
-  }).then(r => r.json()).then(data => {
-    if (data.xp !== undefined) {
-      document.getElementById('xp-count').textContent = data.xp;
-    }
-  }).catch(() => {});
-
-  currentIndex++;
-  setTimeout(() => loadCard(currentIndex), 400);
+  // Store current question for feedback
+  area.innerHTML = html;
+  area.dataset.qword = JSON.stringify(q.word);
+  if(q.type==='type_tl_en') setTimeout(()=>document.getElementById('type-input')?.focus(),50);
+  updateProgressBar();
 }
 
-function showCompletion() {
-  document.getElementById('card-container').classList.add('hidden');
-  document.getElementById('hint-text').classList.add('hidden');
-  document.getElementById('answer-buttons').classList.add('hidden');
-  document.getElementById('keyboard-hint').classList.add('hidden');
-  document.getElementById('progress-bar').style.width = '100%';
-  document.getElementById('completion-screen').classList.remove('hidden');
+// ── Answer checking ────────────────────────────────────────────────────────────
+function checkMC(btn, chosen, correct){
+  if(answered) return;
+  answered = true;
+  const isRight = chosen === correct;
+  const allBtns = document.querySelectorAll('.opt-btn');
+  allBtns.forEach(b=>b.disabled=true);
+  allBtns.forEach(b=>{ if(b.textContent===correct) b.classList.add('reveal'); });
+  btn.classList.add(isRight?'correct':'incorrect');
+  handleResult(isRight, chosen, correct);
+}
+
+function checkType(correct){
+  if(answered) return;
+  const inp = document.getElementById('type-input');
+  if(!inp || !inp.value.trim()) return;
+  answered = true;
+  inp.disabled = true;
+  const isRight = isClose(inp.value, correct);
+  inp.classList.add(isRight?'correct':'incorrect');
+  handleResult(isRight, inp.value, correct);
+}
+
+function handleResult(isRight, given, correct){
+  const wordData = JSON.parse(document.getElementById('question-area').dataset.qword || '{}');
+  answeredCount++;
+
+  if(isRight){
+    correctCount++;
+    xpEarned += wordData.isReview ? 5 : 10;
+    // Call server
+    fetch('/api/progress',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({vocab_item_id:wordData.id,correct:true,xp_gain:wordData.isReview?5:10,course_id:COURSE_ID})}).catch(()=>{});
+    showFeedback(true, null);
+  } else {
+    wrongCount++;
+    hearts--;
+    if(wordData.id) retrySet.add(wordData.id);
+    fetch('/api/progress',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({vocab_item_id:wordData.id,correct:false,xp_gain:0,course_id:COURSE_ID})}).catch(()=>{});
+    renderHearts();
+    if(hearts <= 0){
+      document.getElementById('question-area').classList.add('shake');
+      setTimeout(()=>document.getElementById('question-area').classList.remove('shake'),400);
+    }
+    showFeedback(false, correct);
+  }
+
+  if(hearts <= 0){
+    setTimeout(failLevel, 1200);
+  }
+}
+
+function showFeedback(correct, correctAnswer){
+  const bar = document.getElementById('feedback-bar');
+  const msg = document.getElementById('feedback-msg');
+  const btn = document.getElementById('continue-btn');
+  bar.classList.remove('hidden');
+  if(correct){
+    msg.className='rounded-xl p-4 text-sm font-semibold mb-3 bg-emerald-50 text-emerald-800 border border-emerald-200';
+    msg.textContent='Correct! Well done.';
+    btn.className='w-full font-extrabold py-3 rounded-2xl text-base transition-colors bg-emerald-500 hover:bg-emerald-600 text-white';
+    btn.textContent='Continue';
+  } else {
+    msg.className='rounded-xl p-4 text-sm font-semibold mb-3 bg-red-50 text-red-800 border border-red-200';
+    msg.innerHTML=`Correct answer: <span class="font-bold">${correctAnswer}</span>`;
+    btn.className='w-full font-extrabold py-3 rounded-2xl text-base transition-colors bg-red-500 hover:bg-red-600 text-white';
+    btn.textContent='Got it';
+  }
+}
+
+function hideFeedback(){
+  document.getElementById('feedback-bar').classList.add('hidden');
+}
+
+function nextQuestion(){
+  if(hearts <= 0){ failLevel(); return; }
+  showNextQuestion();
+}
+
+// ── Phase: Complete ────────────────────────────────────────────────────────────
+function completeLevel(){
+  const stars = hearts === 3 ? 3 : hearts >= 1 ? 2 : 1;
+  const bonus = hearts===3 ? 70 : hearts>=1 ? 50 : 30;
+  xpEarned += bonus;
+
+  // Save to server
+  fetch('/api/level-complete',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({course_id:COURSE_ID, level_num:LEVEL_NUM, stars, xp_bonus:bonus})})
+    .then(r=>r.json()).then(d=>{ document.getElementById('final-xp').textContent='+'+xpEarned; }).catch(()=>{});
+
   document.getElementById('final-correct').textContent = correctCount;
-  document.getElementById('final-wrong').textContent = wrongCount;
-  document.getElementById('final-xp').textContent = '+' + xpEarned;
+  document.getElementById('final-wrong').textContent   = wrongCount;
+  document.getElementById('final-xp').textContent      = '+'+xpEarned;
+
+  // Stars animation
+  show('phase-complete');
+  setTimeout(()=>{ for(let i=1;i<=stars;i++) setTimeout(()=>document.getElementById('star'+i).classList.add('earned'),i*300); },200);
   launchConfetti();
 }
 
-function restartSession() {
-  correctCount = 0; wrongCount = 0; xpEarned = 0;
-  currentIndex = 0;
-  shuffle(cards);
-  document.getElementById('completion-screen').classList.add('hidden');
-  document.getElementById('card-container').classList.remove('hidden');
-  document.getElementById('correct-count').textContent = '0';
-  document.getElementById('wrong-count').textContent = '0';
-  loadCard(0);
+function launchConfetti(){
+  const cols=['#7C3AED','#DB2777','#D97706','#10B981','#3B82F6','#F59E0B'];
+  for(let i=0;i<60;i++) setTimeout(()=>{
+    const el=document.createElement('div');
+    el.className='confetti-piece';
+    el.style.cssText=`left:${Math.random()*100}vw;top:-20px;background:${cols[Math.floor(Math.random()*cols.length)]};animation-duration:${1.5+Math.random()*2}s;animation-delay:${Math.random()*.5}s;transform:rotate(${Math.random()*360}deg)`;
+    document.body.appendChild(el);
+    setTimeout(()=>el.remove(),4000);
+  },i*30);
 }
 
-function launchConfetti() {
-  const colors = ['#7C3AED','#DB2777','#D97706','#10B981','#3B82F6','#F59E0B','#EF4444'];
-  for (let i = 0; i < 60; i++) {
-    setTimeout(() => {
-      const el = document.createElement('div');
-      el.classList.add('confetti-piece');
-      el.style.left = Math.random() * 100 + 'vw';
-      el.style.top = '-20px';
-      el.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-      el.style.animationDuration = (1.5 + Math.random() * 2) + 's';
-      el.style.animationDelay = (Math.random() * 0.5) + 's';
-      el.style.transform = `rotate(${Math.random()*360}deg)`;
-      document.body.appendChild(el);
-      setTimeout(() => el.remove(), 4000);
-    }, i * 30);
-  }
+// ── Phase: Failed ─────────────────────────────────────────────────────────────
+function failLevel(){ show('phase-failed'); }
+function retryLevel(){ startPractice(true); }
+
+// ── Exit confirmation ─────────────────────────────────────────────────────────
+function confirmExit(){
+  if(confirm('Leave this level? Your progress in this attempt will be lost.'))
+    window.location.href='{{ url_for("course_detail", course_id=course.id) }}';
 }
 
-// Keyboard controls
-document.addEventListener('keydown', e => {
-  if (e.code === 'Space') { e.preventDefault(); if (!isFlipped) flipCard(); }
-  if (e.code === 'ArrowRight' && isFlipped) markAnswer(true);
-  if (e.code === 'ArrowLeft' && isFlipped) markAnswer(false);
-});
-
-init();
+// ── Intro word count ──────────────────────────────────────────────────────────
+document.getElementById('intro-word-count').textContent = LEVEL_WORDS.length;
 </script>
 {% endblock %}

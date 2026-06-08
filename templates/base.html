@@ -45,6 +45,9 @@
           <a href="{{ url_for('courses') }}" class="text-purple-200 hover:text-white font-medium transition-colors">
             Browse Courses
           </a>
+          <a href="{{ url_for('leaderboard') }}" class="text-purple-200 hover:text-white font-medium transition-colors">
+            Leaderboard
+          </a>
           {% if user %}
           <a href="{{ url_for('create_course') }}" class="text-purple-200 hover:text-white font-medium transition-colors">
             Create Course

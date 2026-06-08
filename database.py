@@ -208,6 +208,18 @@ CREATE TABLE IF NOT EXISTS password_reset_tokens (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
+CREATE TABLE IF NOT EXISTS user_level_progress (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    course_id INTEGER NOT NULL,
+    level_number INTEGER NOT NULL,
+    completed INTEGER NOT NULL DEFAULT 0,
+    stars INTEGER NOT NULL DEFAULT 0,
+    completed_at TIMESTAMP,
+    UNIQUE(user_id, course_id, level_number),
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (course_id) REFERENCES courses(id)
+);
 """
 
 _PG_SCHEMA = """
@@ -285,6 +297,16 @@ CREATE TABLE IF NOT EXISTS password_reset_tokens (
     expires_at TIMESTAMP NOT NULL,
     used INTEGER NOT NULL DEFAULT 0,
     created_at TIMESTAMP DEFAULT NOW()
+);
+CREATE TABLE IF NOT EXISTS user_level_progress (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id),
+    course_id INTEGER NOT NULL REFERENCES courses(id),
+    level_number INTEGER NOT NULL,
+    completed INTEGER NOT NULL DEFAULT 0,
+    stars INTEGER NOT NULL DEFAULT 0,
+    completed_at TIMESTAMP,
+    UNIQUE(user_id, course_id, level_number)
 );
 """
 

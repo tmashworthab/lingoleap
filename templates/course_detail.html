@@ -157,57 +157,79 @@
     <!-- RIGHT: sidebar -->
     <div class="space-y-5">
 
-      <!-- Enroll / Start card -->
-      <div class="bg-white rounded-2xl shadow p-6 text-center sticky top-20">
-        <div class="text-5xl mb-3">
-          {% if enrolled %}🚀{% else %}🎯{% endif %}
-        </div>
-        <h3 class="font-extrabold text-xl text-gray-900 mb-1">
-          {% if enrolled %}Continue learning{% else %}Start this course{% endif %}
-        </h3>
-        <p class="text-gray-500 text-sm mb-5">
-          {% if enrolled %}
-          You're enrolled! Pick up where you left off.
-          {% else %}
-          {{ course.item_count }} vocabulary items waiting for you.
-          {% endif %}
-        </p>
+      <!-- Start / Level map card -->
+      <div class="bg-white rounded-2xl shadow p-6 sticky top-20 space-y-4">
 
         {% if user %}
           {% if enrolled %}
-          <a href="{{ url_for('learn', course_id=course.id) }}"
-             class="block w-full bg-violet-600 hover:bg-violet-700 text-white font-bold py-3 rounded-xl text-center transition-colors mb-3">
-            Continue learning →
+          <a href="{{ url_for('learn_level', course_id=course.id, level_num=next_level) }}"
+             class="block w-full bg-violet-600 hover:bg-violet-700 text-white font-extrabold py-3 rounded-xl text-center transition-colors">
+            {% if completed_levels|length == total_levels %}
+            Practice again
+            {% else %}
+            Play Level {{ next_level }} →
+            {% endif %}
           </a>
           {% else %}
           <form action="{{ url_for('enroll', course_id=course.id) }}" method="post">
             <button type="submit"
-                    class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 rounded-xl transition-colors mb-3">
-              Enroll &amp; Start Learning 🌟
+                    class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold py-3 rounded-xl transition-colors">
+              Enroll &amp; Start Learning
             </button>
           </form>
           {% endif %}
         {% else %}
-        <a href="{{ url_for('signup') }}?next={{ request.url }}"
-           class="block w-full bg-violet-600 hover:bg-violet-700 text-white font-bold py-3 rounded-xl text-center transition-colors mb-3">
-          Sign up to enroll
-        </a>
-        <a href="{{ url_for('login') }}"
-           class="block w-full text-violet-600 hover:text-violet-800 text-sm py-2 transition-colors">
-          Already have an account? Log in
+        <a href="{{ url_for('signup') }}"
+           class="block w-full bg-violet-600 hover:bg-violet-700 text-white font-bold py-3 rounded-xl text-center transition-colors">
+          Sign up to play
         </a>
         {% endif %}
 
-        <div class="mt-4 pt-4 border-t border-gray-100 text-xs text-gray-400 space-y-1.5 text-left">
-          <div class="flex items-center gap-2"><span>📚</span> {{ course.item_count }} vocabulary items</div>
-          <div class="flex items-center gap-2"><span>👥</span> {{ "{:,}".format(course.enrollment_count) }} learners enrolled</div>
-          <div class="flex items-center gap-2"><span>🎯</span> {{ course.difficulty|capitalize }} level</div>
-          <div class="flex items-center gap-2"><span>🏷️</span> {{ course.category|capitalize }}</div>
-          {% if not course.is_official %}
-          <div class="flex items-center gap-2"><span>🌱</span> Community-created</div>
-          {% else %}
-          <div class="flex items-center gap-2"><span>⭐</span> Official LingoLeap course</div>
-          {% endif %}
+        <!-- Level map -->
+        <div class="border-t border-gray-100 pt-4">
+          <div class="text-xs font-bold uppercase tracking-wide text-gray-400 mb-3">
+            {{ total_levels }} Level{{ 's' if total_levels != 1 }} · {{ completed_levels|length }} completed
+          </div>
+          <div class="grid grid-cols-5 gap-2">
+            {% for lvl in range(1, total_levels + 1) %}
+            {% if user and enrolled %}
+              {% if lvl in completed_levels %}
+              <a href="{{ url_for('learn_level', course_id=course.id, level_num=lvl) }}"
+                 class="flex flex-col items-center gap-0.5 group" title="Level {{ lvl }} — completed">
+                <div class="w-10 h-10 bg-emerald-500 hover:bg-emerald-600 rounded-full flex items-center justify-center text-white text-sm font-bold transition-colors">
+                  {{ '★'*level_stars.get(lvl,1) if level_stars.get(lvl,1) <= 3 else '✓' }}
+                </div>
+                <div class="text-xs text-emerald-600 font-semibold">{{ lvl }}</div>
+              </a>
+              {% elif lvl == next_level %}
+              <a href="{{ url_for('learn_level', course_id=course.id, level_num=lvl) }}"
+                 class="flex flex-col items-center gap-0.5 group" title="Level {{ lvl }} — play now!">
+                <div class="w-10 h-10 bg-violet-600 hover:bg-violet-700 rounded-full flex items-center justify-center text-white text-sm font-bold transition-colors animate-pulse">
+                  ▶
+                </div>
+                <div class="text-xs text-violet-600 font-bold">{{ lvl }}</div>
+              </a>
+              {% else %}
+              <div class="flex flex-col items-center gap-0.5" title="Level {{ lvl }} — locked">
+                <div class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-gray-400 text-sm">🔒</div>
+                <div class="text-xs text-gray-400">{{ lvl }}</div>
+              </div>
+              {% endif %}
+            {% else %}
+              <div class="flex flex-col items-center gap-0.5" title="Level {{ lvl }}">
+                <div class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-gray-400 text-sm font-bold">{{ lvl }}</div>
+                <div class="text-xs text-gray-400">{{ lvl }}</div>
+              </div>
+            {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="border-t border-gray-100 pt-3 text-xs text-gray-400 space-y-1.5">
+          <div>📚 {{ course.item_count }} words · {{ total_levels }} levels</div>
+          <div>👥 {{ "{:,}".format(course.enrollment_count) }} learners</div>
+          <div>🎯 {{ course.difficulty|capitalize }} · {{ course.category|capitalize }}</div>
+          {% if course.is_official %}<div>⭐ Official course</div>{% endif %}
         </div>
       </div>
 
