@@ -109,12 +109,6 @@
       {% elif category == 'error' %}bg-red-50 text-red-800 border border-red-200
       {% elif category == 'warning' %}bg-amber-50 text-amber-800 border border-amber-200
       {% else %}bg-blue-50 text-blue-800 border border-blue-200{% endif %}">
-      <span class="text-lg">
-        {% if category == 'success' %}✅
-        {% elif category == 'error' %}❌
-        {% elif category == 'warning' %}⚠️
-        {% else %}ℹ️{% endif %}
-      </span>
       {{ message }}
       <button onclick="this.parentElement.remove()" class="ml-auto opacity-60 hover:opacity-100 text-lg leading-none">&times;</button>
     </div>

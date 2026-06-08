@@ -146,7 +146,7 @@ def signup():
         conn.close()
         session['user_id'] = user_id
         session['username'] = username
-        flash(f'Welcome to LingoLeap, {username}! 🎉', 'success')
+        flash(f'Welcome to LingoLeap, {username}!', 'success')
         return redirect(url_for('index'))
 
     return render_template('signup.html')
@@ -170,7 +170,7 @@ def login():
         if user and bcrypt.checkpw(password.encode(), user['password_hash'].encode()):
             session['user_id'] = user['id']
             session['username'] = user['username']
-            flash(f'Welcome back, {user["username"]}! 👋', 'success')
+            flash(f'Welcome back, {user["username"]}!', 'success')
             return redirect(request.args.get('next') or url_for('index'))
         flash('Invalid username/email or password.', 'error')
 
@@ -319,12 +319,12 @@ def google_callback():
             )
             conn.commit()
             user = conn.execute("SELECT * FROM users WHERE google_id=?", (google_id,)).fetchone()
-            flash(f'Welcome to LingoLeap, {username}! 🎉', 'success')
+            flash(f'Welcome to LingoLeap, {username}!', 'success')
 
     conn.close()
     session['user_id']  = user['id']
     session['username'] = user['username']
-    flash(f'Welcome back, {user["username"]}! 👋', 'success')
+    flash(f'Welcome back, {user["username"]}!', 'success')
     return redirect(url_for('index'))
 
 
@@ -494,7 +494,7 @@ def enroll(course_id):
             (course_id,)
         )
         conn.commit()
-        flash('You\'re enrolled! Let\'s start learning. 🚀', 'success')
+        flash('You\'re enrolled! Let\'s start learning.', 'success')
     conn.close()
     return redirect(url_for('learn', course_id=course_id))
 
@@ -516,7 +516,7 @@ def rate_course(course_id):
     )
     conn.commit()
     conn.close()
-    flash('Rating saved! ⭐', 'success')
+    flash('Rating saved!', 'success')
     return redirect(url_for('course_detail', course_id=course_id))
 
 
@@ -684,7 +684,7 @@ def create_course():
 
         conn.commit()
         conn.close()
-        flash(f'Course "{title}" created successfully! 🎉', 'success')
+        flash(f'Course "{title}" created successfully!', 'success')
         return redirect(url_for('course_detail', course_id=course_id))
 
     return render_template('create_course.html', languages=languages, user=current_user())
