@@ -1018,6 +1018,344 @@ def leaderboard():
         tier_meta=TIER_META, user=user, my_rank=my_rank)
 
 
+# ── MOBILE API ───────────────────────────────────────────────────────────────
+# Token-based JSON API for the React Native app.
+
+from functools import wraps
+
+def _user_from_token():
+    auth = request.headers.get('Authorization', '')
+    if not auth.startswith('Bearer '):
+        return None
+    token = auth[7:]
+    conn = get_db()
+    user = conn.execute("SELECT * FROM users WHERE api_token=?", (token,)).fetchone()
+    conn.close()
+    return user
+
+def api_login_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        user = _user_from_token()
+        if not user:
+            return jsonify({'error': 'Unauthorised'}), 401
+        return f(user, *args, **kwargs)
+    return decorated
+
+def _user_dict(u):
+    return {
+        'id': u['id'], 'username': u['username'], 'email': u['email'],
+        'xp': u['xp'], 'avatar_color': u['avatar_color'],
+        'avatar_choice': u['avatar_choice'], 'avatar_url': u['avatar_url'],
+        'onboarded': bool(u['onboarded']),
+    }
+
+def _course_dict(c):
+    d = dict(c)
+    # ensure JSON-serialisable (no sqlite3.Row)
+    return {k: d[k] for k in d}
+
+@app.route('/api/login', methods=['POST'])
+def api_login():
+    data = request.get_json() or {}
+    identifier = data.get('identifier', '').strip()
+    password    = data.get('password', '')
+    conn = get_db()
+    user = conn.execute(
+        "SELECT * FROM users WHERE username=? OR email=?",
+        (identifier, identifier.lower())
+    ).fetchone()
+    if not user or user['password_hash'] == 'google_oauth' or \
+            not bcrypt.checkpw(password.encode(), user['password_hash'].encode()):
+        conn.close()
+        return jsonify({'error': 'Invalid credentials'}), 401
+    token = secrets.token_urlsafe(32)
+    conn.execute("UPDATE users SET api_token=? WHERE id=?", (token, user['id']))
+    conn.commit()
+    conn.close()
+    return jsonify({'token': token, 'user': _user_dict(user)})
+
+@app.route('/api/signup', methods=['POST'])
+def api_signup():
+    data     = request.get_json() or {}
+    username = data.get('username', '').strip()
+    email    = data.get('email', '').strip().lower()
+    password = data.get('password', '')
+    errors = []
+    if len(username) < 3:  errors.append('Username must be at least 3 characters.')
+    if len(password) < 6:  errors.append('Password must be at least 6 characters.')
+    if not email:           errors.append('Email is required.')
+    if errors:
+        return jsonify({'error': errors[0]}), 400
+    conn = get_db()
+    if conn.execute("SELECT 1 FROM users WHERE username=?", (username,)).fetchone():
+        conn.close(); return jsonify({'error': 'Username already taken.'}), 400
+    if conn.execute("SELECT 1 FROM users WHERE email=?", (email,)).fetchone():
+        conn.close(); return jsonify({'error': 'Email already registered.'}), 400
+    pw_hash = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
+    color   = AVATAR_COLORS[len(username) % len(AVATAR_COLORS)]
+    token   = secrets.token_urlsafe(32)
+    conn.execute(
+        "INSERT INTO users (username, email, password_hash, avatar_color, onboarded, api_token) VALUES (?,?,?,?,1,?)",
+        (username, email, pw_hash, color, token)
+    )
+    conn.commit()
+    user = conn.execute("SELECT * FROM users WHERE username=?", (username,)).fetchone()
+    conn.close()
+    return jsonify({'token': token, 'user': _user_dict(user)}), 201
+
+@app.route('/api/me')
+@api_login_required
+def api_me(user):
+    return jsonify({'user': _user_dict(user)})
+
+@app.route('/api/dashboard')
+@api_login_required
+def api_dashboard(user):
+    conn = get_db()
+    enrolled = conn.execute("""
+        SELECT c.*, l.name as lang_name, l.flag_emoji, l.code as lang_code,
+               e.completed_items, e.enrolled_at
+        FROM enrollments e
+        JOIN courses c ON e.course_id = c.id
+        JOIN languages l ON c.language_id = l.id
+        WHERE e.user_id=? ORDER BY e.enrolled_at DESC
+    """, (user['id'],)).fetchall()
+
+    enrolled_ids = {r['id'] for r in enrolled}
+    suggested = conn.execute("""
+        SELECT c.*, l.name as lang_name, l.flag_emoji, l.code as lang_code,
+               ROUND(AVG(r.rating), 1) as avg_rating
+        FROM courses c
+        JOIN languages l ON c.language_id = l.id
+        LEFT JOIN course_ratings r ON c.id = r.course_id
+        WHERE c.id NOT IN ({})
+        GROUP BY c.id ORDER BY c.enrollment_count DESC LIMIT 6
+    """.format(','.join('?' * len(enrolled_ids)) if enrolled_ids else '0'),
+        list(enrolled_ids)).fetchall()
+
+    level_progress = {}
+    for course in enrolled:
+        total_lvls = max(1, math.ceil(course['item_count'] / WORDS_PER_LEVEL))
+        completed_lvls = conn.execute(
+            "SELECT COUNT(*) FROM user_level_progress WHERE user_id=? AND course_id=? AND completed=1",
+            (user['id'], course['id'])
+        ).fetchone()[0]
+        level_progress[str(course['id'])] = {'total': total_lvls, 'done': completed_lvls}
+
+    languages = conn.execute("SELECT * FROM languages").fetchall()
+    conn.close()
+    return jsonify({
+        'enrolled':  [dict(c) for c in enrolled],
+        'suggested': [dict(c) for c in suggested],
+        'level_progress': level_progress,
+        'languages': [dict(l) for l in languages],
+    })
+
+@app.route('/api/courses')
+@api_login_required
+def api_courses(user):
+    lang   = request.args.get('lang', '')
+    q      = request.args.get('q', '').strip()
+    sort   = request.args.get('sort', 'popular')
+    wheres, params = ["1=1"], []
+    if lang:
+        wheres.append("l.code=?"); params.append(lang)
+    if q:
+        wheres.append("(c.title LIKE ? OR c.description LIKE ?)")
+        params += [f'%{q}%', f'%{q}%']
+    order = {'popular':'c.enrollment_count DESC','rating':'avg_rating DESC',
+             'newest':'c.created_at DESC','items':'c.item_count DESC'}.get(sort,'c.enrollment_count DESC')
+    conn = get_db()
+    courses = conn.execute(f"""
+        SELECT c.*, l.name as lang_name, l.flag_emoji, l.code as lang_code,
+               u.username as creator_name,
+               ROUND(AVG(r.rating),1) as avg_rating, COUNT(DISTINCT r.id) as rating_count
+        FROM courses c
+        JOIN languages l ON c.language_id=l.id
+        LEFT JOIN users u ON c.creator_id=u.id
+        LEFT JOIN course_ratings r ON c.id=r.course_id
+        WHERE {' AND '.join(wheres)}
+        GROUP BY c.id ORDER BY {order}
+    """, params).fetchall()
+    conn.close()
+    return jsonify({'courses': [dict(c) for c in courses]})
+
+@app.route('/api/courses/<int:course_id>')
+@api_login_required
+def api_course_detail(user, course_id):
+    conn = get_db()
+    course = conn.execute("""
+        SELECT c.*, l.name as lang_name, l.flag_emoji, l.code as lang_code,
+               l.color_from, l.color_to, u.username as creator_name
+        FROM courses c JOIN languages l ON c.language_id=l.id
+        LEFT JOIN users u ON c.creator_id=u.id
+        WHERE c.id=?
+    """, (course_id,)).fetchone()
+    if not course:
+        conn.close(); return jsonify({'error': 'Not found'}), 404
+
+    vocab_preview = conn.execute(
+        "SELECT * FROM vocab_items WHERE course_id=? ORDER BY position LIMIT 5", (course_id,)
+    ).fetchall()
+    enrolled = is_enrolled(conn, course_id, user['id'])
+    rating_info = get_course_avg_rating(conn, course_id)
+    total_levels = max(1, math.ceil(course['item_count'] / WORDS_PER_LEVEL))
+    completed_levels = [r['level_number'] for r in conn.execute(
+        "SELECT level_number FROM user_level_progress WHERE user_id=? AND course_id=? AND completed=1",
+        (user['id'], course_id)
+    ).fetchall()]
+    level_stars = {r['level_number']: r['stars'] for r in conn.execute(
+        "SELECT level_number, stars FROM user_level_progress WHERE user_id=? AND course_id=? AND completed=1",
+        (user['id'], course_id)
+    ).fetchall()}
+    next_level = total_levels
+    for lvl in range(1, total_levels + 1):
+        if lvl not in completed_levels:
+            next_level = lvl; break
+    conn.close()
+    return jsonify({
+        'course': dict(course),
+        'vocab_preview': [dict(v) for v in vocab_preview],
+        'enrolled': enrolled,
+        'rating': rating_info,
+        'total_levels': total_levels,
+        'completed_levels': completed_levels,
+        'level_stars': level_stars,
+        'next_level': next_level,
+    })
+
+@app.route('/api/courses/<int:course_id>/enroll', methods=['POST'])
+@api_login_required
+def api_enroll(user, course_id):
+    conn = get_db()
+    if not is_enrolled(conn, course_id, user['id']):
+        conn.execute("INSERT OR IGNORE INTO enrollments (course_id, user_id) VALUES (?,?)",
+                     (course_id, user['id']))
+        conn.execute("UPDATE courses SET enrollment_count=enrollment_count+1 WHERE id=?", (course_id,))
+        conn.commit()
+    conn.close()
+    return jsonify({'ok': True})
+
+@app.route('/api/learn/<int:course_id>/level/<int:level_num>')
+@api_login_required
+def api_learn_level(user, course_id, level_num):
+    conn = get_db()
+    course = conn.execute("""
+        SELECT c.*, l.name as lang_name, l.flag_emoji, l.code as lang_code
+        FROM courses c JOIN languages l ON c.language_id=l.id WHERE c.id=?
+    """, (course_id,)).fetchone()
+    if not course:
+        conn.close(); return jsonify({'error': 'Not found'}), 404
+
+    # Auto-enroll
+    if not is_enrolled(conn, course_id, user['id']):
+        conn.execute("INSERT OR IGNORE INTO enrollments (course_id, user_id) VALUES (?,?)", (course_id, user['id']))
+        conn.execute("UPDATE courses SET enrollment_count=enrollment_count+1 WHERE id=?", (course_id,))
+        conn.commit()
+
+    total_levels = max(1, math.ceil(course['item_count'] / WORDS_PER_LEVEL))
+    level_num = max(1, min(level_num, total_levels))
+    offset = (level_num - 1) * WORDS_PER_LEVEL
+    level_words = conn.execute(
+        "SELECT * FROM vocab_items WHERE course_id=? ORDER BY position LIMIT ? OFFSET ?",
+        (course_id, WORDS_PER_LEVEL, offset)
+    ).fetchall()
+    all_words = conn.execute(
+        "SELECT * FROM vocab_items WHERE course_id=? ORDER BY position", (course_id,)
+    ).fetchall()
+    completed_levels = {r['level_number'] for r in conn.execute(
+        "SELECT level_number FROM user_level_progress WHERE user_id=? AND course_id=? AND completed=1",
+        (user['id'], course_id)
+    ).fetchall()}
+    progress_rows = conn.execute(
+        "SELECT vocab_item_id, correct_count, incorrect_count FROM user_progress WHERE user_id=?",
+        (user['id'],)
+    ).fetchall()
+    progress = {r['vocab_item_id']: {'correct': r['correct_count'], 'incorrect': r['incorrect_count']}
+                for r in progress_rows}
+
+    review_words = []
+    if completed_levels:
+        completed_word_ids = set()
+        for cl in completed_levels:
+            cl_offset = (cl - 1) * WORDS_PER_LEVEL
+            for w in conn.execute(
+                "SELECT id FROM vocab_items WHERE course_id=? ORDER BY position LIMIT ? OFFSET ?",
+                (course_id, WORDS_PER_LEVEL, cl_offset)
+            ).fetchall():
+                completed_word_ids.add(w['id'])
+        review_candidates = sorted(
+            [w for w in all_words if w['id'] in completed_word_ids],
+            key=lambda w: progress.get(w['id'], {}).get('incorrect', 0), reverse=True
+        )
+        review_words = review_candidates[:3]
+
+    conn.close()
+
+    def word_dict(w):
+        return {
+            'id': w['id'], 'word': w['word'], 'translation': w['translation'],
+            'example': w['example_sentence'] or '', 'pronunciation': w['pronunciation'] or '',
+            'incorrect': progress.get(w['id'], {}).get('incorrect', 0),
+            'correct':   progress.get(w['id'], {}).get('correct', 0),
+        }
+
+    return jsonify({
+        'course': dict(course),
+        'level_num': level_num,
+        'total_levels': total_levels,
+        'is_completed': level_num in completed_levels,
+        'completed_levels': list(completed_levels),
+        'level_words': [word_dict(w) for w in level_words],
+        'all_words':   [word_dict(w) for w in all_words],
+        'review_words': [word_dict(w) for w in review_words],
+    })
+
+@app.route('/api/leaderboard')
+@api_login_required
+def api_leaderboard(user):
+    conn = get_db()
+    all_users = conn.execute(
+        "SELECT id, username, xp, avatar_color FROM users ORDER BY xp DESC"
+    ).fetchall()
+    conn.close()
+    ranked = []
+    for i, u in enumerate(all_users, 1):
+        tier = xp_tier(u['xp'], rank=i)
+        ranked.append({
+            'rank': i, 'id': u['id'], 'username': u['username'],
+            'xp': u['xp'], 'avatar_color': u['avatar_color'],
+            'tier': tier, 'is_me': u['id'] == user['id'],
+        })
+    return jsonify({'leaderboard': ranked})
+
+@app.route('/api/profile')
+@api_login_required
+def api_profile(user):
+    conn = get_db()
+    enrolled_courses = conn.execute("""
+        SELECT c.*, l.name as lang_name, l.flag_emoji, e.completed_items, e.enrolled_at
+        FROM enrollments e JOIN courses c ON e.course_id=c.id
+        JOIN languages l ON c.language_id=l.id
+        WHERE e.user_id=? ORDER BY e.enrolled_at DESC
+    """, (user['id'],)).fetchall()
+    total_correct = conn.execute(
+        "SELECT COALESCE(SUM(correct_count),0) as total FROM user_progress WHERE user_id=?",
+        (user['id'],)
+    ).fetchone()['total']
+    conn.close()
+    level = max(1, user['xp'] // 500 + 1)
+    return jsonify({
+        'user': _user_dict(user),
+        'enrolled_courses': [dict(c) for c in enrolled_courses],
+        'total_correct': total_correct,
+        'level': level,
+        'xp_in_level': user['xp'] % 500,
+        'xp_to_next': 500,
+    })
+
+
 # ── ERROR HANDLERS ────────────────────────────────────────────────────────────
 
 @app.errorhandler(404)

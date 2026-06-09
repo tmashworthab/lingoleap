@@ -134,6 +134,7 @@ CREATE TABLE IF NOT EXISTS users (
     avatar_choice INTEGER DEFAULT 0,
     onboarded INTEGER NOT NULL DEFAULT 0,
     xp INTEGER NOT NULL DEFAULT 0,
+    api_token TEXT UNIQUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 CREATE TABLE IF NOT EXISTS languages (
@@ -236,6 +237,7 @@ CREATE TABLE IF NOT EXISTS users (
     avatar_choice INTEGER DEFAULT 0,
     onboarded INTEGER NOT NULL DEFAULT 0,
     xp INTEGER NOT NULL DEFAULT 0,
+    api_token TEXT UNIQUE,
     created_at TIMESTAMP DEFAULT NOW()
 );
 CREATE TABLE IF NOT EXISTS languages (
@@ -330,6 +332,7 @@ def init_db():
         "ALTER TABLE users ADD COLUMN avatar_url TEXT",
         "ALTER TABLE users ADD COLUMN avatar_choice INTEGER DEFAULT 0",
         "ALTER TABLE users ADD COLUMN onboarded INTEGER NOT NULL DEFAULT 0",
+        "ALTER TABLE users ADD COLUMN api_token TEXT",
     ]:
         try:
             conn.execute(sql)
