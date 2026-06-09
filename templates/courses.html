@@ -11,61 +11,64 @@
 
 <div class="max-w-7xl mx-auto px-4 py-8">
   <!-- Search & Filter Bar -->
-  <form method="get" class="bg-white rounded-2xl shadow p-5 mb-8 flex flex-wrap gap-4 items-end">
-    <!-- Search -->
-    <div class="flex-1 min-w-48">
+  <form method="get" class="bg-white rounded-2xl shadow p-4 md:p-5 mb-8">
+    <!-- Search (full width) -->
+    <div class="mb-3">
       <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Search</label>
       <input type="text" name="q" value="{{ search }}" placeholder="Course name or keyword…"
-             class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400">
+             class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400">
     </div>
-    <!-- Language -->
-    <div class="min-w-36">
-      <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Language</label>
-      <select name="lang" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 bg-white">
-        <option value="">All languages</option>
-        {% for lang in languages %}
-        <option value="{{ lang.code }}" {% if lang_filter == lang.code %}selected{% endif %}>
-          {{ lang.flag_emoji }} {{ lang.name }}
-        </option>
-        {% endfor %}
-      </select>
+    <!-- Filters grid: 2-col on mobile, 4-col on md+ -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
+      <div>
+        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Language</label>
+        <select name="lang" class="w-full border border-gray-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 bg-white">
+          <option value="">All languages</option>
+          {% for lang in languages %}
+          <option value="{{ lang.code }}" {% if lang_filter == lang.code %}selected{% endif %}>
+            {{ lang.flag_emoji }} {{ lang.name }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Type</label>
+        <select name="type" class="w-full border border-gray-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 bg-white">
+          <option value="" {% if not type_filter %}selected{% endif %}>All types</option>
+          <option value="official" {% if type_filter == 'official' %}selected{% endif %}>⭐ Official</option>
+          <option value="community" {% if type_filter == 'community' %}selected{% endif %}>🌱 Community</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Difficulty</label>
+        <select name="diff" class="w-full border border-gray-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 bg-white">
+          <option value="" {% if not diff_filter %}selected{% endif %}>Any level</option>
+          <option value="beginner" {% if diff_filter == 'beginner' %}selected{% endif %}>🌱 Beginner</option>
+          <option value="intermediate" {% if diff_filter == 'intermediate' %}selected{% endif %}>🌿 Intermediate</option>
+          <option value="advanced" {% if diff_filter == 'advanced' %}selected{% endif %}>🌳 Advanced</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Sort by</label>
+        <select name="sort" class="w-full border border-gray-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 bg-white">
+          <option value="popular" {% if sort == 'popular' %}selected{% endif %}>🔥 Most popular</option>
+          <option value="rating" {% if sort == 'rating' %}selected{% endif %}>⭐ Highest rated</option>
+          <option value="newest" {% if sort == 'newest' %}selected{% endif %}>🆕 Newest</option>
+          <option value="items" {% if sort == 'items' %}selected{% endif %}>📚 Most words</option>
+        </select>
+      </div>
     </div>
-    <!-- Type -->
-    <div class="min-w-36">
-      <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Type</label>
-      <select name="type" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 bg-white">
-        <option value="" {% if not type_filter %}selected{% endif %}>All types</option>
-        <option value="official" {% if type_filter == 'official' %}selected{% endif %}>⭐ Official</option>
-        <option value="community" {% if type_filter == 'community' %}selected{% endif %}>🌱 Community</option>
-      </select>
+    <div class="flex gap-3">
+      <button type="submit"
+              class="flex-1 bg-violet-600 hover:bg-violet-700 text-white font-bold px-6 py-3 rounded-xl text-sm transition-colors">
+        Search
+      </button>
+      {% if search or lang_filter or type_filter or diff_filter %}
+      <a href="{{ url_for('courses') }}" class="flex items-center text-gray-400 hover:text-gray-600 text-sm px-4 py-3 border border-gray-200 rounded-xl">
+        Clear
+      </a>
+      {% endif %}
     </div>
-    <!-- Difficulty -->
-    <div class="min-w-36">
-      <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Difficulty</label>
-      <select name="diff" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 bg-white">
-        <option value="" {% if not diff_filter %}selected{% endif %}>Any level</option>
-        <option value="beginner" {% if diff_filter == 'beginner' %}selected{% endif %}>🌱 Beginner</option>
-        <option value="intermediate" {% if diff_filter == 'intermediate' %}selected{% endif %}>🌿 Intermediate</option>
-        <option value="advanced" {% if diff_filter == 'advanced' %}selected{% endif %}>🌳 Advanced</option>
-      </select>
-    </div>
-    <!-- Sort -->
-    <div class="min-w-36">
-      <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Sort by</label>
-      <select name="sort" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 bg-white">
-        <option value="popular" {% if sort == 'popular' %}selected{% endif %}>🔥 Most popular</option>
-        <option value="rating" {% if sort == 'rating' %}selected{% endif %}>⭐ Highest rated</option>
-        <option value="newest" {% if sort == 'newest' %}selected{% endif %}>🆕 Newest</option>
-        <option value="items" {% if sort == 'items' %}selected{% endif %}>📚 Most words</option>
-      </select>
-    </div>
-    <button type="submit"
-            class="bg-violet-600 hover:bg-violet-700 text-white font-bold px-6 py-2.5 rounded-xl text-sm transition-colors">
-      Search
-    </button>
-    {% if search or lang_filter or type_filter or diff_filter %}
-    <a href="{{ url_for('courses') }}" class="text-gray-400 hover:text-gray-600 text-sm py-2.5">Clear filters</a>
-    {% endif %}
   </form>
 
   <!-- Active filter chips -->

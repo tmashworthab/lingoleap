@@ -12,46 +12,46 @@
   <div class="absolute top-0 right-0 w-96 h-96 bg-pink-500 rounded-full opacity-20 -translate-y-1/2 translate-x-1/3 blur-3xl"></div>
   <div class="absolute bottom-0 left-0 w-80 h-80 bg-violet-400 rounded-full opacity-20 translate-y-1/2 -translate-x-1/4 blur-3xl"></div>
 
-  <div class="relative max-w-7xl mx-auto px-4 py-20 md:py-28">
+  <div class="relative max-w-7xl mx-auto px-4 py-12 md:py-28">
     <div class="max-w-3xl">
-      <div class="inline-flex items-center gap-2 bg-white/20 backdrop-blur rounded-full px-4 py-1.5 text-sm font-medium mb-6">
+      <div class="inline-flex items-center gap-2 bg-white/20 backdrop-blur rounded-full px-4 py-1.5 text-sm font-medium mb-5">
         Community-powered language learning
       </div>
-      <h1 class="text-5xl md:text-7xl font-black leading-tight mb-6">
+      <h1 class="text-4xl md:text-7xl font-black leading-tight mb-5">
         Learn any<br>
         <span class="text-yellow-300">language.</span><br>
         Your way.
       </h1>
-      <p class="text-xl text-purple-100 mb-8 max-w-xl leading-relaxed">
-        Discover thousands of community-created courses, or build your own vocab lists to share with the world. Free, fun, and effective.
+      <p class="text-base md:text-xl text-purple-100 mb-7 max-w-xl leading-relaxed">
+        Discover community-created courses, or build your own vocab lists to share with the world. Free, fun, and effective.
       </p>
-      <div class="flex flex-wrap gap-4">
+      <div class="flex flex-col sm:flex-row gap-3">
         <a href="{{ url_for('signup') }}"
-           class="bg-yellow-400 hover:bg-yellow-300 text-gray-900 font-extrabold px-8 py-4 rounded-full text-lg shadow-xl hover:shadow-2xl transition-all hover:-translate-y-0.5">
+           class="bg-yellow-400 hover:bg-yellow-300 text-gray-900 font-extrabold px-8 py-4 rounded-full text-lg shadow-xl transition-all text-center">
           Get started, it's free
         </a>
         <a href="{{ url_for('courses') }}"
-           class="bg-white/20 hover:bg-white/30 backdrop-blur text-white font-bold px-8 py-4 rounded-full text-lg border border-white/30 transition-all hover:-translate-y-0.5">
+           class="bg-white/20 hover:bg-white/30 backdrop-blur text-white font-bold px-8 py-4 rounded-full text-lg border border-white/30 transition-all text-center">
           Browse courses
         </a>
       </div>
       <!-- Stats bar -->
-      <div class="flex flex-wrap gap-8 mt-12 text-center">
+      <div class="grid grid-cols-4 gap-4 mt-10 text-center">
         <div>
-          <div class="text-3xl font-black text-yellow-300">15+</div>
-          <div class="text-purple-200 text-sm">Courses</div>
+          <div class="text-2xl md:text-3xl font-black text-yellow-300">15+</div>
+          <div class="text-purple-200 text-xs md:text-sm">Courses</div>
         </div>
         <div>
-          <div class="text-3xl font-black text-yellow-300">3</div>
-          <div class="text-purple-200 text-sm">Languages</div>
+          <div class="text-2xl md:text-3xl font-black text-yellow-300">3</div>
+          <div class="text-purple-200 text-xs md:text-sm">Languages</div>
         </div>
         <div>
-          <div class="text-3xl font-black text-yellow-300">500+</div>
-          <div class="text-purple-200 text-sm">Vocabulary items</div>
+          <div class="text-2xl md:text-3xl font-black text-yellow-300">500+</div>
+          <div class="text-purple-200 text-xs md:text-sm">Words</div>
         </div>
         <div>
-          <div class="text-3xl font-black text-yellow-300">Free</div>
-          <div class="text-purple-200 text-sm">Always</div>
+          <div class="text-2xl md:text-3xl font-black text-yellow-300">Free</div>
+          <div class="text-purple-200 text-xs md:text-sm">Always</div>
         </div>
       </div>
     </div>

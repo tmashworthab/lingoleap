@@ -2,11 +2,34 @@
 {% block title %}{{ course.title }} — LingoLeap{% endblock %}
 
 {% block content %}
+<!-- Mobile sticky CTA (hidden on lg+) -->
+<div class="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200 px-4 py-3 shadow-2xl">
+  {% if user %}
+    {% if enrolled %}
+    <a href="{{ url_for('learn_level', course_id=course.id, level_num=next_level) }}"
+       class="block w-full bg-violet-600 text-white font-extrabold py-3.5 rounded-2xl text-center text-base">
+      {% if completed_levels|length == total_levels %}Practice again{% else %}Play Level {{ next_level }} →{% endif %}
+    </a>
+    {% else %}
+    <form action="{{ url_for('enroll', course_id=course.id) }}" method="post">
+      <button type="submit" class="w-full bg-emerald-500 text-white font-extrabold py-3.5 rounded-2xl text-base">
+        Enroll &amp; Start Learning
+      </button>
+    </form>
+    {% endif %}
+  {% else %}
+  <a href="{{ url_for('signup') }}"
+     class="block w-full bg-violet-600 text-white font-extrabold py-3.5 rounded-2xl text-center text-base">
+    Sign up to play
+  </a>
+  {% endif %}
+</div>
+
 <!-- Header banner -->
-<div class="text-white py-12" style="background: linear-gradient(135deg, {{ course.color_from }}, {{ course.color_to }});">
+<div class="text-white py-10 md:py-12" style="background: linear-gradient(135deg, {{ course.color_from }}, {{ course.color_to }});">
   <div class="max-w-5xl mx-auto px-4">
     <div class="flex items-start gap-4">
-      <span class="text-6xl">{{ course.flag_emoji }}</span>
+      <span class="text-5xl md:text-6xl">{{ course.flag_emoji }}</span>
       <div class="flex-1">
         <div class="flex flex-wrap gap-2 mb-2">
           {% if course.is_official %}
@@ -33,7 +56,7 @@
   </div>
 </div>
 
-<div class="max-w-5xl mx-auto px-4 py-10">
+<div class="max-w-5xl mx-auto px-4 py-10 pb-28 lg:pb-10">
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
     <!-- LEFT: main content -->
@@ -144,7 +167,7 @@
                 {% endfor %}
               </div>
             </div>
-            <span class="ml-auto text-xs text-gray-400">{{ review.created_at[:10] }}</span>
+            <span class="ml-auto text-xs text-gray-400">{{ review.created_at|string|truncate(10, killwords=True, end='') }}</span>
           </div>
           {% endfor %}
         </div>
