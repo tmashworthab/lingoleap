@@ -318,8 +318,8 @@ def google_callback():
 
             color = AVATAR_COLORS[len(username) % len(AVATAR_COLORS)]
             conn.execute(
-                "INSERT INTO users (username, email, password_hash, google_id, avatar_url, avatar_color) "
-                "VALUES (?,?,'google_oauth',?,?,?)",
+                "INSERT INTO users (username, email, password_hash, google_id, avatar_url, avatar_color, onboarded) "
+                "VALUES (?,?,'google_oauth',?,?,?,1)",
                 (username, email, google_id, picture, color)
             )
             conn.commit()

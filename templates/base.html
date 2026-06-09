@@ -56,6 +56,8 @@
             {% if user.avatar_choice %}
             <img src="{{ url_for('static', filename='avatars/avatar' + user.avatar_choice|string + '.png') }}"
                  class="w-8 h-8 rounded-full object-cover bg-white" alt="{{ user.username }}">
+            {% elif user.avatar_url %}
+            <img src="{{ user.avatar_url }}" class="w-8 h-8 rounded-full object-cover bg-white" alt="{{ user.username }}">
             {% else %}
             <span class="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold"
                   style="background-color: {{ user.avatar_color }}">
