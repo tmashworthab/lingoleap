@@ -229,10 +229,15 @@ function editDist(a,b){
   return d[a.length][b.length];
 }
 function isClose(typed, correct){
-  const t=typed.toLowerCase().trim(), c=correct.toLowerCase().trim();
-  if(t===c) return true;
-  const maxD = c.length>8?2:c.length>4?1:0;
-  return editDist(t,c)<=maxD;
+  const t = typed.toLowerCase().trim();
+  // Split "hello / namaste" or "yes, indeed" into individual alternatives
+  const alts = correct.split(/[\/,]/).map(s => s.toLowerCase().trim()).filter(s => s.length > 0);
+  for (const alt of alts) {
+    if (t === alt) return true;
+    const maxD = alt.length > 8 ? 2 : alt.length > 4 ? 1 : 0;
+    if (editDist(t, alt) <= maxD) return true;
+  }
+  return false;
 }
 
 function getDistractors(correctWord, field, n=3){
