@@ -8,48 +8,60 @@
   <div class="absolute top-0 right-0 w-[600px] h-[600px] bg-teal-400 rounded-full opacity-15 -translate-y-1/3 translate-x-1/4 blur-3xl"></div>
   <div class="absolute bottom-0 left-0 w-96 h-96 bg-sky-300 rounded-full opacity-20 translate-y-1/2 -translate-x-1/4 blur-3xl"></div>
 
-  <div class="relative max-w-7xl mx-auto px-4 py-12 md:py-28">
-    <div class="max-w-3xl">
-      <div class="inline-flex items-center gap-2 bg-white/20 backdrop-blur rounded-full px-4 py-1.5 text-sm font-medium mb-5">
-        🌍 Community-powered language learning
+  <div class="relative max-w-7xl mx-auto px-4 py-12 md:py-20">
+    <div class="flex flex-col md:flex-row items-center gap-8 md:gap-4">
+
+      <!-- Left: text -->
+      <div class="flex-1 min-w-0">
+        <div class="inline-flex items-center gap-2 bg-white/20 backdrop-blur rounded-full px-4 py-1.5 text-sm font-medium mb-5">
+          🌍 Community-powered language learning
+        </div>
+        <h1 class="text-4xl md:text-6xl font-black leading-tight mb-5">
+          Connect with<br>
+          <span class="text-amber-300">the world.</span><br>
+          Learn its languages.
+        </h1>
+        <p class="text-base md:text-xl text-sky-100 mb-7 max-w-xl leading-relaxed">
+          People from every corner of the globe share their languages here. Join them - discover courses, build vocab lists, and leap across borders.
+        </p>
+        <div class="flex flex-col sm:flex-row gap-3">
+          <a href="{{ url_for('signup') }}"
+             class="bg-amber-400 hover:bg-amber-300 text-gray-900 font-extrabold px-8 py-4 rounded-full text-lg shadow-xl transition-all text-center">
+            Start learning free 🚀
+          </a>
+          <a href="{{ url_for('courses') }}"
+             class="bg-white/20 hover:bg-white/30 backdrop-blur text-white font-bold px-8 py-4 rounded-full text-lg border border-white/30 transition-all text-center">
+            Browse courses
+          </a>
+        </div>
+        <!-- Stats bar -->
+        <div class="grid grid-cols-4 gap-4 mt-10 text-center">
+          <div>
+            <div class="text-2xl md:text-3xl font-black text-amber-300">15+</div>
+            <div class="text-sky-100 text-xs md:text-sm">Courses</div>
+          </div>
+          <div>
+            <div class="text-2xl md:text-3xl font-black text-amber-300">3</div>
+            <div class="text-sky-100 text-xs md:text-sm">Languages</div>
+          </div>
+          <div>
+            <div class="text-2xl md:text-3xl font-black text-amber-300">500+</div>
+            <div class="text-sky-100 text-xs md:text-sm">Words</div>
+          </div>
+          <div>
+            <div class="text-2xl md:text-3xl font-black text-amber-300">Free</div>
+            <div class="text-sky-100 text-xs md:text-sm">Always</div>
+          </div>
+        </div>
       </div>
-      <h1 class="text-4xl md:text-7xl font-black leading-tight mb-5">
-        Connect with<br>
-        <span class="text-amber-300">the world.</span><br>
-        Learn its languages.
-      </h1>
-      <p class="text-base md:text-xl text-sky-100 mb-7 max-w-xl leading-relaxed">
-        People from every corner of the globe share their languages here. Join them - discover courses, build vocab lists, and leap across borders.
-      </p>
-      <div class="flex flex-col sm:flex-row gap-3">
-        <a href="{{ url_for('signup') }}"
-           class="bg-amber-400 hover:bg-amber-300 text-gray-900 font-extrabold px-8 py-4 rounded-full text-lg shadow-xl transition-all text-center">
-          Start learning free 🚀
-        </a>
-        <a href="{{ url_for('courses') }}"
-           class="bg-white/20 hover:bg-white/30 backdrop-blur text-white font-bold px-8 py-4 rounded-full text-lg border border-white/30 transition-all text-center">
-          Browse courses
-        </a>
+
+      <!-- Right: illustration -->
+      <div class="flex-1 flex justify-center md:justify-end">
+        <img src="{{ url_for('static', filename='img/hero-people.png') }}"
+             alt="People from around the world talking and learning languages"
+             class="w-full max-w-lg md:max-w-xl drop-shadow-2xl">
       </div>
-      <!-- Stats bar -->
-      <div class="grid grid-cols-4 gap-4 mt-10 text-center">
-        <div>
-          <div class="text-2xl md:text-3xl font-black text-amber-300">15+</div>
-          <div class="text-sky-100 text-xs md:text-sm">Courses</div>
-        </div>
-        <div>
-          <div class="text-2xl md:text-3xl font-black text-amber-300">3</div>
-          <div class="text-sky-100 text-xs md:text-sm">Languages</div>
-        </div>
-        <div>
-          <div class="text-2xl md:text-3xl font-black text-amber-300">500+</div>
-          <div class="text-sky-100 text-xs md:text-sm">Words</div>
-        </div>
-        <div>
-          <div class="text-2xl md:text-3xl font-black text-amber-300">Free</div>
-          <div class="text-sky-100 text-xs md:text-sm">Always</div>
-        </div>
-      </div>
+
     </div>
   </div>
   <!-- Flag strip -->
