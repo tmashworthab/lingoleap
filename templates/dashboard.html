@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Welcome, {{ user.username }} — LingoLeap{% endblock %}
+{% block title %}Welcome, {{ user.username }} - LingoLeap{% endblock %}
 
 {% block content %}
 
@@ -27,7 +27,7 @@
         {% if enrolled %}
           Ready to continue learning? Pick up where you left off.
         {% else %}
-          Let's get learning — choose a course below to get started.
+          Let's get learning - choose a course below to get started.
         {% endif %}
       </p>
     </div>
@@ -83,7 +83,7 @@
       {% if enrolled %}Explore more languages{% else %}Let's get learning!{% endif %}
     </h2>
     <p class="text-gray-500 mb-5">
-      {% if not enrolled %}Pick a language and enroll on your first course — it only takes a second.{% endif %}
+      {% if not enrolled %}Pick a language and enroll on your first course - it only takes a second.{% endif %}
     </p>
 
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-8">

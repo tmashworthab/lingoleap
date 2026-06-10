@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Level {{ level_num }} — {{ course.title }} — LingoLeap{% endblock %}
+{% block title %}Level {{ level_num }} - {{ course.title }} - LingoLeap{% endblock %}
 
 {% block extra_head %}
 <style>
@@ -172,7 +172,7 @@
 <div id="phase-failed" class="phase items-center text-center gap-5 py-8">
   <div class="text-7xl">💔</div>
   <h2 class="text-3xl font-extrabold text-gray-900">Out of hearts!</h2>
-  <p class="text-gray-500">Don't give up — you were so close! Your progress on other levels is safe.</p>
+  <p class="text-gray-500">Don't give up - you were so close! Your progress on other levels is safe.</p>
   <div class="bg-white rounded-2xl shadow p-5 w-full text-sm text-gray-600">
     <p>💡 <strong>Tip:</strong> Words you got wrong will be asked first when you retry.</p>
   </div>
@@ -404,7 +404,7 @@ function renderQuestion(q){
   const area = document.getElementById('question-area');
   let html = `
     <div class="text-xs font-bold uppercase tracking-widest text-gray-400 mb-1">
-      ${q.isReview ? '🔄 Review — ' : ''}${q.type==='mc_en_tl'?'Choose the '+LANG_NAME+' translation':'Translate to English'}
+      ${q.isReview ? '🔄 Review - ' : ''}${q.type==='mc_en_tl'?'Choose the '+LANG_NAME+' translation':'Translate to English'}
     </div>
     <div class="word-card mb-2">
       <div class="text-sm text-gray-400 mb-2">${q.prompt}</div>

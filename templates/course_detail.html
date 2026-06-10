@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}{{ course.title }} — LingoLeap{% endblock %}
+{% block title %}{{ course.title }} - LingoLeap{% endblock %}
 
 {% block content %}
 <!-- Mobile sticky CTA (hidden on lg+) -->
@@ -105,7 +105,7 @@
         <!-- Rating summary -->
         <div class="flex items-center gap-6 mb-6 p-4 bg-amber-50 rounded-xl">
           <div class="text-center">
-            <div class="text-5xl font-black text-amber-500">{{ rating_info.avg or '—' }}</div>
+            <div class="text-5xl font-black text-amber-500">{{ rating_info.avg or '-' }}</div>
             <div class="flex gap-0.5 justify-center mt-1">
               {% for i in range(1, 6) %}
               <span class="text-xl {% if rating_info.avg and i <= rating_info.avg|int %}text-amber-400{% else %}text-gray-200{% endif %}">★</span>
@@ -218,7 +218,7 @@
             {% if user and enrolled %}
               {% if lvl in completed_levels %}
               <a href="{{ url_for('learn_level', course_id=course.id, level_num=lvl) }}"
-                 class="flex flex-col items-center gap-0.5 group" title="Level {{ lvl }} — completed">
+                 class="flex flex-col items-center gap-0.5 group" title="Level {{ lvl }} - completed">
                 <div class="w-10 h-10 bg-emerald-500 hover:bg-emerald-600 rounded-full flex items-center justify-center text-white text-sm font-bold transition-colors">
                   {{ '★'*level_stars.get(lvl,1) if level_stars.get(lvl,1) <= 3 else '✓' }}
                 </div>
@@ -226,14 +226,14 @@
               </a>
               {% elif lvl == next_level %}
               <a href="{{ url_for('learn_level', course_id=course.id, level_num=lvl) }}"
-                 class="flex flex-col items-center gap-0.5 group" title="Level {{ lvl }} — play now!">
+                 class="flex flex-col items-center gap-0.5 group" title="Level {{ lvl }} - play now!">
                 <div class="w-10 h-10 bg-sky-600 hover:bg-sky-700 rounded-full flex items-center justify-center text-white text-sm font-bold transition-colors animate-pulse">
                   ▶
                 </div>
                 <div class="text-xs text-sky-600 font-bold">{{ lvl }}</div>
               </a>
               {% else %}
-              <div class="flex flex-col items-center gap-0.5" title="Level {{ lvl }} — locked">
+              <div class="flex flex-col items-center gap-0.5" title="Level {{ lvl }} - locked">
                 <div class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-gray-400 text-sm">🔒</div>
                 <div class="text-xs text-gray-400">{{ lvl }}</div>
               </div>

@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Leaderboard — LingoLeap{% endblock %}
+{% block title %}Leaderboard - LingoLeap{% endblock %}
 
 {% block content %}
 <div class="bg-gradient-to-r from-sky-700 to-sky-800 text-white py-12">
@@ -24,11 +24,11 @@
     <span>·</span>
     <span>💎 Platinum = 5000+ XP</span>
     <span>·</span>
-    <span>🥇 Gold = 2000–4999</span>
+    <span>🥇 Gold = 2000-4999</span>
     <span>·</span>
-    <span>🥈 Silver = 500–1999</span>
+    <span>🥈 Silver = 500-1999</span>
     <span>·</span>
-    <span>🥉 Bronze = 0–499</span>
+    <span>🥉 Bronze = 0-499</span>
   </div>
 </div>
 
@@ -98,7 +98,7 @@
     <div class="flex items-center gap-3 mb-4">
       <span class="text-3xl">{{ t.icon }}</span>
       <h2 class="text-2xl font-extrabold {{ t.text }}">{{ t.label }}</h2>
-      <span class="text-xs text-gray-400">2,000–4,999 XP</span>
+      <span class="text-xs text-gray-400">2,000-4,999 XP</span>
     </div>
     <div class="space-y-2">
       {% for u in gold %}
@@ -125,7 +125,7 @@
     <div class="flex items-center gap-3 mb-4">
       <span class="text-3xl">{{ t.icon }}</span>
       <h2 class="text-2xl font-extrabold {{ t.text }}">{{ t.label }}</h2>
-      <span class="text-xs text-gray-400">500–1,999 XP</span>
+      <span class="text-xs text-gray-400">500-1,999 XP</span>
     </div>
     <div class="space-y-2">
       {% for u in silver %}
@@ -152,7 +152,7 @@
     <div class="flex items-center gap-3 mb-4">
       <span class="text-3xl">{{ t.icon }}</span>
       <h2 class="text-2xl font-extrabold {{ t.text }}">{{ t.label }}</h2>
-      <span class="text-xs text-gray-400">0–499 XP</span>
+      <span class="text-xs text-gray-400">0-499 XP</span>
     </div>
     <div class="space-y-2">
       {% for u in bronze %}
@@ -175,7 +175,7 @@
   {% if not honour and not platinum and not gold and not silver and not bronze %}
   <div class="text-center py-20 text-gray-400">
     <div class="text-5xl mb-4">🌱</div>
-    <p>No learners yet — be the first to earn XP!</p>
+    <p>No learners yet - be the first to earn XP!</p>
     <a href="{{ url_for('courses') }}" class="mt-4 inline-block bg-sky-600 text-white font-bold px-6 py-3 rounded-full hover:bg-sky-700 transition-colors">
       Browse courses
     </a>
