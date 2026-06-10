@@ -1075,6 +1075,63 @@ def api_login():
     conn.close()
     return jsonify({'token': token, 'user': _user_dict(user)})
 
+@app.route('/api/google-auth', methods=['POST'])
+def api_google_auth():
+    """Accepts a Google ID token from the mobile app, finds or creates the user, returns API token."""
+    import urllib.request, json as _json
+    data = request.get_json() or {}
+    id_token = data.get('id_token', '').strip()
+    if not id_token:
+        return jsonify({'error': 'id_token required'}), 400
+
+    # Verify token with Google
+    try:
+        url = f'https://oauth2.googleapis.com/tokeninfo?id_token={id_token}'
+        with urllib.request.urlopen(url, timeout=10) as resp:
+            info = _json.loads(resp.read())
+    except Exception:
+        return jsonify({'error': 'Invalid Google token'}), 401
+
+    google_id = info.get('sub')
+    email     = info.get('email', '').lower()
+    picture   = info.get('picture', '')
+    name      = info.get('name', '') or info.get('given_name', '')
+    if not google_id or not email:
+        return jsonify({'error': 'Could not get user info from Google'}), 401
+
+    conn = get_db()
+    user = conn.execute("SELECT * FROM users WHERE google_id=?", (google_id,)).fetchone()
+    if not user:
+        user = conn.execute("SELECT * FROM users WHERE email=?", (email,)).fetchone()
+
+    if user:
+        # Existing user — ensure they have an api_token
+        token = dict(user).get('api_token') or secrets.token_urlsafe(32)
+        conn.execute("UPDATE users SET api_token=?, avatar_url=?, google_id=? WHERE id=?",
+                     (token, picture, google_id, user['id']))
+        conn.commit()
+        user = conn.execute("SELECT * FROM users WHERE id=?", (user['id'],)).fetchone()
+    else:
+        # New user
+        username = (name or email.split('@')[0]).replace(' ', '').lower()[:20]
+        base = username
+        i = 1
+        while conn.execute("SELECT 1 FROM users WHERE username=?", (username,)).fetchone():
+            username = f"{base}{i}"; i += 1
+        color = AVATAR_COLORS[len(username) % len(AVATAR_COLORS)]
+        token = secrets.token_urlsafe(32)
+        conn.execute(
+            "INSERT INTO users (username, email, password_hash, google_id, avatar_url, avatar_color, onboarded, api_token) "
+            "VALUES (?,?,'google_oauth',?,?,?,1,?)",
+            (username, email, google_id, picture, color, token)
+        )
+        conn.commit()
+        user = conn.execute("SELECT * FROM users WHERE email=?", (email,)).fetchone()
+
+    conn.close()
+    return jsonify({'token': token, 'user': _user_dict(user)})
+
+
 @app.route('/api/signup', methods=['POST'])
 def api_signup():
     data     = request.get_json() or {}
