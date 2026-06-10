@@ -10,10 +10,10 @@
       theme: {
         extend: {
           colors: {
-            primary: '#7C3AED',
-            'primary-dark': '#5B21B6',
-            secondary: '#DB2777',
-            accent: '#D97706',
+            primary: '#0369A1',
+            'primary-dark': '#075985',
+            secondary: '#16A34A',
+            accent: '#F59E0B',
           },
           fontFamily: {
             sans: ['Inter', 'system-ui', 'sans-serif'],
@@ -30,29 +30,29 @@
 <body class="bg-gray-50 font-sans text-gray-800 min-h-screen flex flex-col">
 
   <!-- NAVBAR -->
-  <nav class="bg-gradient-to-r from-violet-700 to-purple-800 shadow-lg sticky top-0 z-50">
+  <nav class="bg-gradient-to-r from-sky-600 to-sky-700 shadow-lg sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex items-center justify-between h-16">
         <!-- Logo -->
         <a href="{{ url_for('index') }}" class="flex items-center gap-2 group">
-          <span class="text-white font-extrabold text-xl tracking-tight group-hover:text-yellow-300 transition-colors">
+          <span class="text-white font-extrabold text-xl tracking-tight group-hover:text-amber-300 transition-colors">
             LingoLeap
           </span>
         </a>
 
         <!-- Desktop nav links -->
         <div class="hidden md:flex items-center gap-6">
-          <a href="{{ url_for('courses') }}" class="text-purple-200 hover:text-white font-medium transition-colors">
+          <a href="{{ url_for('courses') }}" class="text-sky-100 hover:text-white font-medium transition-colors">
             Browse Courses
           </a>
-          <a href="{{ url_for('leaderboard') }}" class="text-purple-200 hover:text-white font-medium transition-colors">
+          <a href="{{ url_for('leaderboard') }}" class="text-sky-100 hover:text-white font-medium transition-colors">
             Leaderboard
           </a>
           {% if user %}
-          <a href="{{ url_for('create_course') }}" class="text-purple-200 hover:text-white font-medium transition-colors">
+          <a href="{{ url_for('create_course') }}" class="text-sky-100 hover:text-white font-medium transition-colors">
             Create Course
           </a>
-          <a href="{{ url_for('profile') }}" class="flex items-center gap-2 text-purple-200 hover:text-white font-medium transition-colors">
+          <a href="{{ url_for('profile') }}" class="flex items-center gap-2 text-sky-100 hover:text-white font-medium transition-colors">
             {% if user.avatar_choice %}
             <img src="{{ url_for('static', filename='avatars/avatar' + user.avatar_choice|string + '.png') }}"
                  class="w-8 h-8 rounded-full object-cover bg-white" alt="{{ user.username }}">
@@ -67,16 +67,16 @@
             {{ user.username }}
           </a>
           <form action="{{ url_for('logout') }}" method="post" class="inline">
-            <button type="submit" class="text-purple-300 hover:text-white text-sm transition-colors">
+            <button type="submit" class="text-sky-200 hover:text-white text-sm transition-colors">
               Log out
             </button>
           </form>
           {% else %}
-          <a href="{{ url_for('login') }}" class="text-purple-200 hover:text-white font-medium transition-colors">
+          <a href="{{ url_for('login') }}" class="text-sky-100 hover:text-white font-medium transition-colors">
             Log in
           </a>
           <a href="{{ url_for('signup') }}"
-             class="bg-yellow-400 hover:bg-yellow-300 text-gray-900 font-bold px-4 py-2 rounded-full text-sm transition-colors shadow">
+             class="bg-amber-400 hover:bg-amber-300 text-gray-900 font-bold px-4 py-2 rounded-full text-sm transition-colors shadow">
             Sign up free
           </a>
           {% endif %}
@@ -95,12 +95,12 @@
 
       <!-- Mobile menu -->
       <div id="mobile-menu" class="hidden md:hidden pb-4">
-        <div class="flex flex-col pt-2 border-t border-purple-600">
-          <a href="{{ url_for('courses') }}" class="text-purple-200 hover:text-white font-medium py-3 px-1 border-b border-purple-700/50">Browse Courses</a>
-          <a href="{{ url_for('leaderboard') }}" class="text-purple-200 hover:text-white font-medium py-3 px-1 border-b border-purple-700/50">Leaderboard</a>
+        <div class="flex flex-col pt-2 border-t border-sky-500">
+          <a href="{{ url_for('courses') }}" class="text-sky-100 hover:text-white font-medium py-3 px-1 border-b border-sky-600/50">Browse Courses</a>
+          <a href="{{ url_for('leaderboard') }}" class="text-sky-100 hover:text-white font-medium py-3 px-1 border-b border-sky-600/50">Leaderboard</a>
           {% if user %}
-          <a href="{{ url_for('create_course') }}" class="text-purple-200 hover:text-white font-medium py-3 px-1 border-b border-purple-700/50">Create Course</a>
-          <a href="{{ url_for('profile') }}" class="text-purple-200 hover:text-white font-medium py-3 px-1 border-b border-purple-700/50 flex items-center gap-2">
+          <a href="{{ url_for('create_course') }}" class="text-sky-100 hover:text-white font-medium py-3 px-1 border-b border-sky-600/50">Create Course</a>
+          <a href="{{ url_for('profile') }}" class="text-sky-100 hover:text-white font-medium py-3 px-1 border-b border-sky-600/50 flex items-center gap-2">
             {% if user.avatar_choice %}
             <img src="{{ url_for('static', filename='avatars/avatar' + user.avatar_choice|string + '.png') }}"
                  class="w-6 h-6 rounded-full object-cover bg-white" alt="{{ user.username }}">
@@ -111,12 +111,12 @@
             {{ user.username }}
           </a>
           <form action="{{ url_for('logout') }}" method="post" class="py-3 px-1">
-            <button type="submit" class="text-purple-300 hover:text-white font-medium">Log out</button>
+            <button type="submit" class="text-sky-200 hover:text-white font-medium">Log out</button>
           </form>
           {% else %}
-          <a href="{{ url_for('login') }}" class="text-purple-200 hover:text-white font-medium py-3 px-1 border-b border-purple-700/50">Log in</a>
+          <a href="{{ url_for('login') }}" class="text-sky-100 hover:text-white font-medium py-3 px-1 border-b border-sky-600/50">Log in</a>
           <div class="pt-3">
-            <a href="{{ url_for('signup') }}" class="block w-full bg-yellow-400 hover:bg-yellow-300 text-gray-900 font-extrabold px-4 py-3 rounded-xl text-center">
+            <a href="{{ url_for('signup') }}" class="block w-full bg-amber-400 hover:bg-amber-300 text-gray-900 font-extrabold px-4 py-3 rounded-xl text-center">
               Sign up free
             </a>
           </div>
@@ -155,7 +155,7 @@
       <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
         <div class="md:col-span-2">
           <div class="flex items-center gap-2 mb-3">
-            <span class="text-2xl">🦜</span>
+            <span class="text-2xl">🌍</span>
             <span class="text-white font-extrabold text-lg">LingoLeap</span>
           </div>
           <p class="text-sm leading-relaxed">
@@ -180,7 +180,7 @@
         </div>
       </div>
       <div class="border-t border-gray-800 mt-8 pt-6 text-sm text-center">
-        © 2026 LingoLeap. Made with 💜 for language lovers everywhere.
+        © 2026 LingoLeap. Made with 🌍 for language lovers everywhere.
       </div>
     </div>
   </footer>

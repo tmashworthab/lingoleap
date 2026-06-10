@@ -4,7 +4,7 @@
 {% block content %}
 
 <!-- Welcome hero -->
-<div class="bg-gradient-to-r from-violet-700 to-purple-800 text-white">
+<div class="bg-gradient-to-r from-sky-700 to-sky-800 text-white">
   <div class="max-w-5xl mx-auto px-4 py-10 flex items-center gap-6">
     {% if user.avatar_choice %}
     <img src="{{ url_for('static', filename='avatars/avatar' + user.avatar_choice|string + '.png') }}"
@@ -21,9 +21,9 @@
     </div>
     {% endif %}
     <div>
-      <p class="text-purple-200 text-sm font-medium mb-1">Good to see you!</p>
+      <p class="text-sky-200 text-sm font-medium mb-1">Good to see you!</p>
       <h1 class="text-3xl font-extrabold mb-1">Welcome back, {{ user.username }}!</h1>
-      <p class="text-purple-200">
+      <p class="text-sky-200">
         {% if enrolled %}
           Ready to continue learning? Pick up where you left off.
         {% else %}
@@ -45,7 +45,7 @@
       {% set lp = level_progress[course.id] %}
       {% set pct = [(lp.done / lp.total * 100)|int, 100]|min %}
       <div class="bg-white rounded-2xl shadow hover:shadow-lg transition-all overflow-hidden group">
-        <div class="h-2 {% if pct == 100 %}bg-emerald-400{% else %}bg-gradient-to-r from-violet-500 to-pink-500{% endif %}"></div>
+        <div class="h-2 {% if pct == 100 %}bg-emerald-400{% else %}bg-gradient-to-r from-sky-500 to-teal-500{% endif %}"></div>
         <div class="p-5">
           <div class="flex items-start justify-between mb-3">
             <span class="text-3xl">{{ course.flag_emoji }}</span>
@@ -55,19 +55,19 @@
             <span class="text-xs text-gray-400">Level {{ lp.done + 1 }} of {{ lp.total }}</span>
             {% endif %}
           </div>
-          <h3 class="font-bold text-gray-900 mb-1 group-hover:text-violet-700 transition-colors">{{ course.title }}</h3>
+          <h3 class="font-bold text-gray-900 mb-1 group-hover:text-sky-700 transition-colors">{{ course.title }}</h3>
           <p class="text-xs text-gray-400 mb-3">{{ course.lang_name }}</p>
 
           <!-- Progress bar -->
           <div class="h-2 bg-gray-100 rounded-full overflow-hidden mb-1">
-            <div class="h-full rounded-full {% if pct == 100 %}bg-emerald-400{% else %}bg-violet-500{% endif %} transition-all"
+            <div class="h-full rounded-full {% if pct == 100 %}bg-emerald-400{% else %}bg-sky-500{% endif %} transition-all"
                  style="width:{{ pct }}%"></div>
           </div>
           <div class="text-xs text-gray-400 mb-4">{{ lp.done }} / {{ lp.total }} levels complete</div>
 
           <a href="{{ url_for('learn', course_id=course.id) }}"
              class="block w-full text-center font-bold py-2.5 rounded-xl text-sm transition-colors
-                    {% if pct == 100 %}bg-emerald-100 hover:bg-emerald-200 text-emerald-700{% else %}bg-violet-600 hover:bg-violet-700 text-white{% endif %}">
+                    {% if pct == 100 %}bg-emerald-100 hover:bg-emerald-200 text-emerald-700{% else %}bg-sky-600 hover:bg-sky-700 text-white{% endif %}">
             {% if pct == 100 %}Practice again{% else %}Continue →{% endif %}
           </a>
         </div>
@@ -105,7 +105,7 @@
   <section>
     <div class="flex items-center justify-between mb-5">
       <h2 class="text-2xl font-extrabold text-gray-900">Popular courses</h2>
-      <a href="{{ url_for('courses') }}" class="text-violet-600 hover:text-violet-800 text-sm font-semibold">
+      <a href="{{ url_for('courses') }}" class="text-sky-600 hover:text-sky-800 text-sm font-semibold">
         Browse all →
       </a>
     </div>

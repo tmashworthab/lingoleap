@@ -2,11 +2,11 @@
 {% block title %}Leaderboard — LingoLeap{% endblock %}
 
 {% block content %}
-<div class="bg-gradient-to-r from-violet-700 to-purple-800 text-white py-12">
+<div class="bg-gradient-to-r from-sky-700 to-sky-800 text-white py-12">
   <div class="max-w-3xl mx-auto px-4 text-center">
     <div class="text-5xl mb-3">🏆</div>
     <h1 class="text-4xl font-extrabold mb-2">Leaderboard</h1>
-    <p class="text-purple-200">Earn XP by completing levels and answering correctly</p>
+    <p class="text-sky-200">Earn XP by completing levels and answering correctly</p>
     {% if my_rank %}
     <div class="inline-flex items-center gap-3 bg-white/20 backdrop-blur rounded-full px-5 py-2 mt-4 text-sm font-semibold">
       <span>{{ my_rank.meta.icon }}</span>
@@ -176,7 +176,7 @@
   <div class="text-center py-20 text-gray-400">
     <div class="text-5xl mb-4">🌱</div>
     <p>No learners yet — be the first to earn XP!</p>
-    <a href="{{ url_for('courses') }}" class="mt-4 inline-block bg-violet-600 text-white font-bold px-6 py-3 rounded-full hover:bg-violet-700 transition-colors">
+    <a href="{{ url_for('courses') }}" class="mt-4 inline-block bg-sky-600 text-white font-bold px-6 py-3 rounded-full hover:bg-sky-700 transition-colors">
       Browse courses
     </a>
   </div>

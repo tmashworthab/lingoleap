@@ -2,7 +2,7 @@
 {% block title %}Sign Up Free — LingoLeap{% endblock %}
 
 {% block content %}
-<div class="min-h-screen bg-gradient-to-br from-violet-50 via-white to-pink-50 flex items-center justify-center py-12 px-4">
+<div class="min-h-screen bg-gradient-to-br from-sky-50 via-white to-pink-50 flex items-center justify-center py-12 px-4">
   <div class="w-full max-w-md">
 
     <div class="text-center mb-8">
@@ -41,7 +41,7 @@
                  value="{{ username or '' }}"
                  placeholder="Pick a fun username"
                  autocomplete="username"
-                 class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400">
+                 class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400">
           <p class="text-xs text-gray-400 mt-1">3–30 characters. This is how others will see you.</p>
         </div>
 
@@ -53,7 +53,7 @@
                  value="{{ email or '' }}"
                  placeholder="your@email.com"
                  autocomplete="email"
-                 class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400">
+                 class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400">
         </div>
 
         <div>
@@ -63,7 +63,7 @@
           <input type="password" id="password" name="password" required minlength="6"
                  placeholder="At least 6 characters"
                  autocomplete="new-password"
-                 class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400">
+                 class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400">
         </div>
 
         <div>
@@ -73,18 +73,18 @@
           <input type="password" id="confirm_password" name="confirm_password" required
                  placeholder="Repeat your password"
                  autocomplete="new-password"
-                 class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400">
+                 class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400">
         </div>
 
         <button type="submit"
-                class="w-full bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-700 hover:to-pink-700 text-white font-extrabold py-3 rounded-xl text-base transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5">
+                class="w-full bg-gradient-to-r from-sky-600 to-teal-600 hover:from-sky-700 hover:to-pink-700 text-white font-extrabold py-3 rounded-xl text-base transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5">
           Create my account 🚀
         </button>
       </form>
 
       <div class="mt-6 text-center text-sm text-gray-500">
         Already have an account?
-        <a href="{{ url_for('login') }}" class="text-violet-600 font-semibold hover:text-violet-800 transition-colors">
+        <a href="{{ url_for('login') }}" class="text-sky-600 font-semibold hover:text-sky-800 transition-colors">
           Log in
         </a>
       </div>

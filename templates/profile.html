@@ -3,7 +3,7 @@
 
 {% block content %}
 <!-- Profile Header -->
-<div class="bg-gradient-to-r from-violet-700 to-purple-800 text-white py-12">
+<div class="bg-gradient-to-r from-sky-700 to-sky-800 text-white py-12">
   <div class="max-w-5xl mx-auto px-4">
     <div class="flex items-center gap-6">
       {% if user.avatar_choice %}
@@ -22,7 +22,7 @@
       {% endif %}
       <div>
         <h1 class="text-3xl font-extrabold">{{ user.username }}</h1>
-        <p class="text-purple-200 text-sm mt-1">
+        <p class="text-sky-200 text-sm mt-1">
           Member since {{ user.created_at|string|truncate(10, killwords=True, end='') }}
         </p>
         <a href="{{ url_for('onboarding') }}"
@@ -45,7 +45,7 @@
 
     <!-- XP progress bar -->
     <div class="mt-6 max-w-md">
-      <div class="flex justify-between text-xs text-purple-200 mb-1">
+      <div class="flex justify-between text-xs text-sky-200 mb-1">
         <span>Level {{ level }}</span>
         <span>{{ xp_in_level }} / {{ xp_to_next }} XP to Level {{ level + 1 }}</span>
       </div>
@@ -85,7 +85,7 @@
           </div>
           <div class="flex items-center justify-between">
             <span class="text-sm text-gray-500">Level</span>
-            <span class="font-bold text-violet-600">{{ level }}</span>
+            <span class="font-bold text-sky-600">{{ level }}</span>
           </div>
         </div>
       </div>
@@ -146,14 +146,14 @@
         <div class="flex items-center gap-4 mb-4">
           {% if user.avatar_choice %}
           <img src="{{ url_for('static', filename='avatars/avatar' + user.avatar_choice|string + '.png') }}"
-               class="w-16 h-16 rounded-full object-cover bg-gray-50 border-2 border-violet-200"
+               class="w-16 h-16 rounded-full object-cover bg-gray-50 border-2 border-sky-200"
                alt="{{ user.username }}">
           {% elif user.avatar_url %}
           <img src="{{ user.avatar_url }}"
-               class="w-16 h-16 rounded-full object-cover bg-gray-50 border-2 border-violet-200"
+               class="w-16 h-16 rounded-full object-cover bg-gray-50 border-2 border-sky-200"
                alt="{{ user.username }}">
           {% else %}
-          <div class="w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl font-black border-2 border-violet-200"
+          <div class="w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl font-black border-2 border-sky-200"
                style="background-color: {{ user.avatar_color }}">
             {{ user.username[0].upper() }}
           </div>
@@ -164,7 +164,7 @@
           </div>
         </div>
         <a href="{{ url_for('onboarding') }}"
-           class="block w-full bg-violet-600 hover:bg-violet-700 text-white font-bold py-2.5 rounded-xl text-center text-sm transition-colors">
+           class="block w-full bg-sky-600 hover:bg-sky-700 text-white font-bold py-2.5 rounded-xl text-center text-sm transition-colors">
           Change avatar or nickname
         </a>
       </div>
@@ -194,7 +194,7 @@
               <div class="font-semibold text-gray-900 truncate">{{ ec.title }}</div>
               <div class="text-xs text-gray-400 mb-2">{{ ec.lang_name }} · {{ ec.item_count }} words</div>
               <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
-                <div class="h-full rounded-full transition-all {% if pct == 100 %}bg-emerald-500{% else %}bg-violet-500{% endif %}"
+                <div class="h-full rounded-full transition-all {% if pct == 100 %}bg-emerald-500{% else %}bg-sky-500{% endif %}"
                      style="width: {{ pct }}%"></div>
               </div>
               <div class="text-xs text-gray-400 mt-1">
@@ -206,7 +206,7 @@
               </div>
             </div>
             <a href="{{ url_for('learn', course_id=ec.id) }}"
-               class="flex-shrink-0 bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold px-4 py-2 rounded-lg transition-colors">
+               class="flex-shrink-0 bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold px-4 py-2 rounded-lg transition-colors">
               {% if pct == 100 %}Review{% else %}Continue{% endif %}
             </a>
           </div>
@@ -217,7 +217,7 @@
           <div class="text-4xl mb-3">📚</div>
           <p class="mb-4">You haven't enrolled in any courses yet.</p>
           <a href="{{ url_for('courses') }}"
-             class="bg-violet-600 text-white font-bold px-6 py-2 rounded-full text-sm hover:bg-violet-700 transition-colors">
+             class="bg-sky-600 text-white font-bold px-6 py-2 rounded-full text-sm hover:bg-sky-700 transition-colors">
             Browse courses
           </a>
         </div>
@@ -245,7 +245,7 @@
               {% endif %}
             </div>
             <a href="{{ url_for('course_detail', course_id=cc.id) }}"
-               class="flex-shrink-0 text-violet-600 hover:text-violet-800 text-xs font-bold px-4 py-2 rounded-lg border border-violet-200 hover:border-violet-400 transition-colors">
+               class="flex-shrink-0 text-sky-600 hover:text-sky-800 text-xs font-bold px-4 py-2 rounded-lg border border-sky-200 hover:border-sky-400 transition-colors">
               View
             </a>
           </div>
