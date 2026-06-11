@@ -30,7 +30,7 @@
 <body class="bg-gray-50 font-sans text-gray-800 min-h-screen flex flex-col">
 
   <!-- NAVBAR -->
-  <nav class="bg-sky-500 shadow-lg sticky top-0 z-50">
+  <nav class="{% block nav_class %}bg-sky-500 shadow-lg{% endblock %} sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex items-center justify-between h-16">
         <!-- Logo -->
