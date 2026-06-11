@@ -17,6 +17,7 @@ from database import get_db, init_db, seed_db, execute_insert, get_course_avg_ra
 app = Flask(__name__)
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 app.secret_key = os.environ.get('SECRET_KEY', secrets.token_hex(32))
+app.permanent_session_lifetime = timedelta(days=30)
 
 # Google OAuth
 oauth = OAuth(app)
@@ -147,6 +148,7 @@ def signup():
         conn.commit()
         user_id = conn.execute("SELECT id FROM users WHERE username=?", (username,)).fetchone()['id']
         conn.close()
+        session.permanent = True
         session['user_id'] = user_id
         session['username'] = username
         return redirect(url_for('onboarding'))  # → pick nickname + avatar
@@ -172,6 +174,7 @@ def login():
         conn.close()
 
         if user and bcrypt.checkpw(password.encode(), user['password_hash'].encode()):
+            session.permanent = True
             session['user_id'] = user['id']
             session['username'] = user['username']
             if not user['onboarded']:
@@ -327,6 +330,7 @@ def google_callback():
             flash(f'Welcome to LingoLeap, {username}!', 'success')
 
     conn.close()
+    session.permanent = True
     session['user_id']  = user['id']
     session['username'] = user['username']
     if not user['onboarded']:
