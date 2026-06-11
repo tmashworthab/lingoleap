@@ -1,13 +1,23 @@
 {% extends "base.html" %}
 {% block title %}Log In - LingoLeap{% endblock %}
+{% block nav_class %}bg-transparent shadow-none{% endblock %}
+{% block nav_hidden %}hidden{% endblock %}
 
 {% block content %}
-<div class="min-h-screen bg-gradient-to-br from-sky-50 via-white to-pink-50 flex items-center justify-center py-12 px-4">
+<div class="min-h-screen bg-sky-500 flex items-center justify-center py-12 px-4 relative">
+
+  <!-- Logo top-left -->
+  <div class="absolute top-6 left-6">
+    <a href="{{ url_for('index') }}">
+      <img src="{{ url_for('static', filename='img/logo.png') }}" alt="LingoLeap" style="height: 3.5rem; margin-left: -24px;">
+    </a>
+  </div>
+
   <div class="w-full max-w-md">
 
     <div class="text-center mb-8">
-      <h1 class="text-3xl font-extrabold text-gray-900">Welcome back!</h1>
-      <p class="text-gray-500 mt-1">Log in to continue your language journey</p>
+      <h1 class="text-3xl font-extrabold text-white">Welcome back!</h1>
+      <p class="text-sky-100 mt-1">Log in to continue your language journey</p>
     </div>
 
     <div class="bg-white rounded-2xl shadow-xl p-8">
