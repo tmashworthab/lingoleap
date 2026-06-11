@@ -7,10 +7,8 @@
   <div class="max-w-5xl mx-auto px-4">
     <div class="flex items-center gap-6">
       {% if user.avatar_choice %}
-      <div class="w-20 h-20 rounded-full overflow-hidden shadow-xl border-4 border-white/30 bg-white flex-shrink-0">
-        <img src="{{ url_for('static', filename='avatars/avatar' + user.avatar_choice|string + '.png') }}"
-             class="w-full scale-[2.2] translate-y-[18%] object-contain"
-             alt="{{ user.username }}">
+      <div class="w-20 h-20 rounded-full shadow-xl border-4 border-white/30 flex-shrink-0"
+           style="background-image: url('{{ url_for('static', filename='avatars/avatar' + user.avatar_choice|string + '.png') }}'); background-size: 280%; background-position: 50% 8%;">
       </div>
       {% elif user.avatar_url %}
       <img src="{{ user.avatar_url }}"
@@ -147,9 +145,8 @@
         </h3>
         <div class="flex items-center gap-4 mb-4">
           {% if user.avatar_choice %}
-          <div class="w-16 h-16 rounded-full overflow-hidden bg-gray-50 border-2 border-sky-200 flex-shrink-0">
-            <img src="{{ url_for('static', filename='avatars/avatar' + user.avatar_choice|string + '.png') }}"
-                 class="w-full scale-[2.2] translate-y-[18%] object-contain" alt="{{ user.username }}">
+          <div class="w-16 h-16 rounded-full border-2 border-sky-200 flex-shrink-0"
+               style="background-image: url('{{ url_for('static', filename='avatars/avatar' + user.avatar_choice|string + '.png') }}'); background-size: 280%; background-position: 50% 8%;">
           </div>
           {% elif user.avatar_url %}
           <img src="{{ user.avatar_url }}"
