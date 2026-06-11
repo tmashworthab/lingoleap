@@ -7,9 +7,10 @@
 <div class="bg-gradient-to-r from-sky-700 to-sky-800 text-white">
   <div class="max-w-5xl mx-auto px-4 py-10 flex items-center gap-6">
     {% if user.avatar_choice %}
-    <img src="{{ url_for('static', filename='avatars/avatar' + user.avatar_choice|string + '.png') }}"
-         class="w-20 h-20 rounded-full object-cover bg-white shadow-xl border-4 border-white/30 flex-shrink-0"
-         alt="{{ user.username }}">
+    <div class="w-20 h-20 rounded-full overflow-hidden bg-white shadow-xl border-4 border-white/30 flex-shrink-0">
+      <img src="{{ url_for('static', filename='avatars/avatar' + user.avatar_choice|string + '.png') }}"
+           class="w-full scale-[2.2] translate-y-[18%] object-contain" alt="{{ user.username }}">
+    </div>
     {% elif user.avatar_url %}
     <img src="{{ user.avatar_url }}"
          class="w-20 h-20 rounded-full object-cover bg-white shadow-xl border-4 border-white/30 flex-shrink-0"
