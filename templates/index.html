@@ -7,44 +7,65 @@
 {% block content %}
 
 <!-- HERO -->
-<section class="relative overflow-hidden bg-sky-500 text-white min-h-screen flex flex-col justify-center">
-  <div class="absolute top-0 right-0 w-[600px] h-[600px] bg-teal-400 rounded-full opacity-15 -translate-y-1/3 translate-x-1/4 blur-3xl"></div>
-  <div class="absolute bottom-0 left-0 w-96 h-96 bg-sky-300 rounded-full opacity-20 translate-y-1/2 -translate-x-1/4 blur-3xl"></div>
+<style>
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .fade-up-1 { animation: fadeUp 0.6s ease both; }
+  .fade-up-2 { animation: fadeUp 0.6s 0.15s ease both; }
+  .fade-up-3 { animation: fadeUp 0.6s 0.3s ease both; }
+  .fade-up-4 { animation: fadeUp 0.6s 0.45s ease both; }
+  .fade-up-5 { animation: fadeUp 0.7s 0.55s ease both; }
+</style>
 
-  <div class="relative max-w-7xl mx-auto px-4 pt-16 pb-12 md:pt-24 md:pb-20">
-    <div class="flex flex-col md:flex-row items-center gap-8 md:gap-4">
+<section class="relative overflow-hidden bg-sky-500 text-white min-h-screen flex flex-col justify-center">
+  <div class="absolute top-0 right-0 w-[600px] h-[600px] bg-teal-400 rounded-full opacity-15 -translate-y-1/3 translate-x-1/4 blur-3xl pointer-events-none"></div>
+  <div class="absolute bottom-0 left-0 w-96 h-96 bg-sky-300 rounded-full opacity-20 translate-y-1/2 -translate-x-1/4 blur-3xl pointer-events-none"></div>
+
+  <div class="relative w-full max-w-7xl mx-auto px-6 pt-14 pb-10 md:pt-24 md:pb-20">
+
+    <!-- Desktop: two-column. Mobile: single centered column -->
+    <div class="flex flex-col items-center text-center md:flex-row md:items-center md:text-left md:gap-8">
 
       <!-- Left: text -->
-      <div class="flex-1 min-w-0">
-        <!-- Logo above headline -->
-        <a href="{{ url_for('index') }}" class="block mb-8 -mt-16" style="width: fit-content;">
-          <img src="{{ url_for('static', filename='img/logo.png') }}" alt="LingoLeap" class="w-auto" style="height: 7rem; max-width: 100%; margin-left: -49px; transform: scaleX(1.12); transform-origin: left center;">
+      <div class="flex-1 min-w-0 flex flex-col items-center md:items-start">
+
+        <!-- Logo -->
+        <a href="{{ url_for('index') }}" class="fade-up-1 mb-6 md:mb-8 inline-block" style="line-height:0;">
+          <img src="{{ url_for('static', filename='img/logo.png') }}"
+               alt="LingoLeap"
+               class="w-auto"
+               style="height: 5.5rem; margin-left: -38px; transform: scaleX(1.12); transform-origin: left center;">
         </a>
-        <h1 class="text-4xl md:text-6xl font-black leading-tight mb-5">
+
+        <h1 class="fade-up-2 text-4xl sm:text-5xl md:text-6xl font-black leading-tight mb-4">
           Connect with<br>
           <span class="text-amber-300">the world.</span><br>
           Learn its languages.
         </h1>
-        <p class="text-base md:text-xl text-sky-100 mb-7 max-w-xl leading-relaxed">
+
+        <p class="fade-up-3 text-base md:text-xl text-sky-100 mb-8 max-w-sm md:max-w-xl leading-relaxed">
           People from every corner of the globe share their languages here. Join them - discover courses, build vocab lists, and leap across borders.
         </p>
-        <div class="flex flex-col sm:flex-row gap-3">
+
+        <div class="fade-up-4 flex flex-col w-full sm:w-auto sm:flex-row gap-3">
           <a href="{{ url_for('signup') }}"
-             class="bg-amber-400 hover:bg-amber-300 text-gray-900 font-extrabold px-8 py-4 rounded-full text-lg shadow-xl transition-all text-center">
+             class="bg-amber-400 hover:bg-amber-300 active:scale-95 text-gray-900 font-extrabold px-8 py-4 rounded-full text-lg shadow-xl transition-all text-center">
             Start learning free
           </a>
           <a href="{{ url_for('login') }}"
-             class="bg-white/20 hover:bg-white/30 backdrop-blur text-white font-bold px-8 py-4 rounded-full text-lg border border-white/30 transition-all text-center">
+             class="bg-white/20 hover:bg-white/30 active:scale-95 backdrop-blur text-white font-bold px-8 py-4 rounded-full text-lg border border-white/40 transition-all text-center">
             I already have an account
           </a>
         </div>
       </div>
 
-      <!-- Right: illustration -->
-      <div class="flex-1 flex justify-center md:justify-end">
+      <!-- Illustration: below text on mobile, right on desktop -->
+      <div class="fade-up-5 flex-1 flex justify-center md:justify-end mt-10 md:mt-0">
         <img src="{{ url_for('static', filename='img/hero-people.png') }}"
              alt="People from around the world talking and learning languages"
-             class="w-full max-w-lg md:max-w-xl drop-shadow-2xl">
+             class="w-64 sm:w-80 md:w-full md:max-w-xl drop-shadow-2xl">
       </div>
 
     </div>
