@@ -12,7 +12,7 @@ from flask import (Flask, render_template, request, redirect, url_for,
                    session, flash, jsonify, abort)
 from authlib.integrations.flask_client import OAuth
 from werkzeug.middleware.proxy_fix import ProxyFix
-from database import get_db, init_db, seed_db, execute_insert, get_course_avg_rating, get_user_rating, is_enrolled
+from database import get_db, init_db, seed_db, update_db, execute_insert, get_course_avg_rating, get_user_rating, is_enrolled
 
 app = Flask(__name__)
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
@@ -32,6 +32,7 @@ google = oauth.register(
 # Initialise DB on startup (works with both `python app.py` and gunicorn)
 init_db()
 seed_db()
+update_db()
 
 AVATAR_COLORS = [
     '#7C3AED', '#DB2777', '#D97706', '#059669',
