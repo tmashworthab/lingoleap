@@ -4,83 +4,66 @@
 {% block nav_hidden %}hidden{% endblock %}
 
 {% block content %}
-<div class="min-h-screen bg-sky-500 flex items-center justify-center py-12 px-4 relative">
+<div class="min-h-screen bg-sky-500 flex flex-col items-center justify-center px-5 py-10">
 
-  <!-- Logo top-left -->
-  <div class="absolute top-6 left-6">
-    <a href="{{ url_for('index') }}">
-      <img src="{{ url_for('static', filename='img/logo.png') }}" alt="LingoLeap" style="height: 3.5rem; margin-left: -24px;">
-    </a>
-  </div>
+  <!-- Logo -->
+  <a href="{{ url_for('index') }}" class="mb-8" style="line-height:0;">
+    <img src="{{ url_for('static', filename='img/logo-cropped.png') }}"
+         alt="LingoLeap"
+         style="height: 3.2rem; transform: scaleX(1.2);">
+  </a>
 
-  <div class="w-full max-w-md">
+  <!-- Card -->
+  <div class="w-full max-w-sm bg-white rounded-3xl shadow-2xl px-6 py-8">
 
-    <div class="text-center mb-8">
-      <h1 class="text-3xl font-extrabold text-white">Welcome back!</h1>
-      <p class="text-sky-100 mt-1">Log in to continue your language journey</p>
-    </div>
+    <h1 class="text-2xl font-extrabold text-gray-900 text-center mb-6">Log in</h1>
 
-    <div class="bg-white rounded-2xl shadow-xl p-8">
+    <!-- Email/password form -->
+    <form action="{{ url_for('login') }}" method="post" class="space-y-3">
+      <input type="text" name="identifier" required autocomplete="username"
+             placeholder="Email or username"
+             class="w-full bg-gray-100 rounded-2xl px-4 py-4 text-base focus:outline-none focus:ring-2 focus:ring-sky-400 placeholder-gray-400">
 
-      <!-- Google sign-in -->
-      <a href="{{ url_for('google_login') }}"
-         class="flex items-center justify-center gap-3 w-full border-2 border-gray-200 hover:border-gray-300 bg-white hover:bg-gray-50 text-gray-700 font-semibold py-3 rounded-xl transition-all mb-2">
-        <svg width="20" height="20" viewBox="0 0 48 48">
-          <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-          <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-          <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-          <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-        </svg>
-        Continue with Google
-      </a>
-
-      <div class="flex items-center gap-3 my-5">
-        <div class="flex-1 h-px bg-gray-200"></div>
-        <span class="text-xs text-gray-400 font-medium">or sign in with email</span>
-        <div class="flex-1 h-px bg-gray-200"></div>
-      </div>
-
-      <form action="{{ url_for('login') }}" method="post" class="space-y-5">
-
-        <div>
-          <label class="block text-sm font-semibold text-gray-700 mb-1.5" for="identifier">
-            Username or Email
-          </label>
-          <input type="text" id="identifier" name="identifier" required autocomplete="username"
-                 placeholder="Your username or email"
-                 class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400">
-        </div>
-
-        <div>
-          <div class="flex items-center justify-between mb-1.5">
-            <label class="text-sm font-semibold text-gray-700" for="password">Password</label>
-            <a href="{{ url_for('forgot_password') }}"
-               class="text-xs text-sky-500 hover:text-sky-700 transition-colors">
-              Forgot password?
-            </a>
-          </div>
-          <input type="password" id="password" name="password" required autocomplete="current-password"
-                 placeholder="Your password"
-                 class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400">
-        </div>
-
-        <button type="submit"
-                class="w-full bg-sky-600 hover:bg-sky-700 text-white font-extrabold py-3 rounded-xl text-base transition-colors shadow-lg">
-          Log in →
-        </button>
-      </form>
-
-      <div class="mt-6 text-center text-sm text-gray-500">
-        Don't have an account?
-        <a href="{{ url_for('signup') }}" class="text-sky-600 font-semibold hover:text-sky-800 transition-colors">
-          Sign up free
+      <div class="relative">
+        <input type="password" name="password" required autocomplete="current-password"
+               placeholder="Password"
+               class="w-full bg-gray-100 rounded-2xl px-4 py-4 text-base focus:outline-none focus:ring-2 focus:ring-sky-400 placeholder-gray-400 pr-28">
+        <a href="{{ url_for('forgot_password') }}"
+           class="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400 uppercase tracking-wide hover:text-sky-500 transition-colors">
+          Forgot?
         </a>
       </div>
+
+      <button type="submit"
+              class="w-full bg-sky-500 hover:bg-sky-400 active:scale-95 text-white font-extrabold py-4 rounded-2xl text-base transition-all shadow-md uppercase tracking-wide">
+        Log in
+      </button>
+    </form>
+
+    <!-- Divider -->
+    <div class="flex items-center gap-3 my-5">
+      <div class="flex-1 h-px bg-gray-200"></div>
+      <span class="text-xs text-gray-400 font-semibold uppercase tracking-wider">or</span>
+      <div class="flex-1 h-px bg-gray-200"></div>
     </div>
 
-    <div class="mt-6 bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800 text-center">
-      <strong>Demo tip:</strong> Create a free account to try everything out!
-    </div>
+    <!-- Google -->
+    <a href="{{ url_for('google_login') }}"
+       class="flex items-center justify-center gap-3 w-full border-2 border-gray-200 hover:border-gray-300 active:scale-95 bg-white text-gray-700 font-bold py-3.5 rounded-2xl transition-all">
+      <svg width="20" height="20" viewBox="0 0 48 48">
+        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+      </svg>
+      Google
+    </a>
+
+    <!-- Sign up link -->
+    <p class="text-center text-sm text-gray-500 mt-6">
+      Don't have an account?
+      <a href="{{ url_for('signup') }}" class="text-sky-500 font-bold hover:text-sky-700 transition-colors">Sign up</a>
+    </p>
 
   </div>
 </div>
