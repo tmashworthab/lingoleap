@@ -1,208 +1,141 @@
 {% extends "base.html" %}
 {% block title %}LingoLeap - Learn Any Language, Your Way{% endblock %}
 
-{% block nav_class %}bg-transparent shadow-none{% endblock %}
-{% block nav_hidden %}hidden{% endblock %}
+{% block nav_class %}bg-purple{% endblock %}
 
 {% block content %}
 
-<!-- HERO -->
-<style>
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  @keyframes fadeIn {
-    from { opacity: 0; }
-    to   { opacity: 1; }
-  }
-  .anim-1 { animation: fadeUp 0.5s 0.05s ease both; }
-  .anim-2 { animation: fadeIn 0.6s 0.2s ease both; }
-  .anim-3 { animation: fadeUp 0.5s 0.35s ease both; }
-  .anim-4 { animation: fadeUp 0.5s 0.5s ease both; }
-  .anim-5 { animation: fadeUp 0.5s 0.6s ease both; }
-</style>
+<!-- ── HERO ───────────────────────────────────────────────────────────────── -->
+<section class="relative overflow-hidden text-white" style="background:var(--purple);">
+  <!-- Decorative blobs -->
+  <div class="absolute top-0 right-0 pointer-events-none" style="width:520px;height:520px;background:var(--purple-mid);border-radius:50%;opacity:0.25;transform:translate(30%,-35%) ;filter:blur(80px);"></div>
+  <div class="absolute bottom-0 left-0 pointer-events-none" style="width:360px;height:360px;background:var(--blue);border-radius:50%;opacity:0.18;transform:translate(-30%,40%);filter:blur(80px);"></div>
 
-<section class="relative overflow-hidden bg-sky-500 text-white">
-  <div class="absolute top-0 right-0 w-[600px] h-[600px] bg-teal-400 rounded-full opacity-15 -translate-y-1/3 translate-x-1/4 blur-3xl pointer-events-none"></div>
-  <div class="absolute bottom-0 left-0 w-96 h-96 bg-sky-300 rounded-full opacity-20 translate-y-1/2 -translate-x-1/4 blur-3xl pointer-events-none"></div>
-
-  <!-- ── MOBILE layout (hidden on md+) ── -->
-  <div class="relative flex flex-col items-center min-h-screen px-6 pt-10 pb-8 md:hidden">
-
-    <!-- Logo -->
-    <div class="anim-1 mb-4" style="line-height:0;">
+  <!-- MOBILE -->
+  <div class="relative flex flex-col items-center px-6 pt-10 pb-10 md:hidden">
+    <div class="anim-1 mb-6" style="line-height:0;">
       <a href="{{ url_for('index') }}">
         <img src="{{ url_for('static', filename='img/logo-cropped.png') }}"
              alt="LingoLeap"
-             style="height: 4rem; transform: translateX(8px) scaleX(1.2);">
+             style="height:3.5rem;transform:scaleX(1.15);transform-origin:center;filter:brightness(0) invert(1);">
       </a>
     </div>
-
-    <!-- Illustration -->
-    <div class="anim-2 flex-1 flex items-center justify-center w-full py-4">
+    <div class="anim-2 w-full flex justify-center py-4">
       <img src="{{ url_for('static', filename='img/hero-people.png') }}"
-           alt="People from around the world talking"
+           alt="People learning languages"
            class="w-full max-w-xs drop-shadow-xl">
     </div>
-
-    <!-- Headline -->
-    <div class="anim-3 text-center mb-3">
+    <div class="anim-3 text-center mb-6">
       <h1 class="text-4xl font-black leading-tight">
         Connect with<br>
-        <span class="text-amber-300">the world.</span><br>
+        <span style="color:var(--yellow);">the world.</span><br>
         Learn its languages.
       </h1>
     </div>
-
-    <!-- Buttons pinned to bottom -->
-    <div class="anim-4 w-full flex flex-col gap-3 mt-6">
-      <a href="{{ url_for('signup') }}"
-         class="w-full bg-amber-400 active:bg-amber-300 text-gray-900 font-extrabold py-4 rounded-2xl text-lg shadow-xl text-center transition-all active:scale-95">
+    <div class="anim-4 w-full flex flex-col gap-3">
+      <a href="{{ url_for('signup') }}" class="btn btn-yellow w-full text-center" style="font-size:1.1rem;padding:1rem;">
         Start learning free
       </a>
-      <a href="{{ url_for('login') }}"
-         class="w-full bg-white/20 active:bg-white/30 text-white font-bold py-4 rounded-2xl text-lg border border-white/40 text-center transition-all active:scale-95">
+      <a href="{{ url_for('login') }}" class="btn btn-ghost w-full text-center"
+         style="font-size:1rem;color:#fff;border-color:rgba(255,255,255,0.35);background:rgba(255,255,255,0.1);">
         I already have an account
       </a>
     </div>
-
   </div>
 
-  <!-- ── DESKTOP layout (hidden below md) ── -->
-  <div class="relative hidden md:flex max-w-7xl mx-auto px-8 pt-24 pb-20 items-center gap-8 min-h-screen">
-
-    <!-- Left: text -->
+  <!-- DESKTOP -->
+  <div class="relative hidden md:flex max-w-7xl mx-auto px-8 pt-20 pb-20 items-center gap-12 min-h-[85vh]">
     <div class="flex-1 min-w-0">
-      <a href="{{ url_for('index') }}" class="anim-1 block mb-8" style="line-height:0; width:fit-content;">
+      <div class="anim-1 mb-8" style="line-height:0;width:fit-content;">
         <img src="{{ url_for('static', filename='img/logo.png') }}"
              alt="LingoLeap"
-             style="height: 7rem; margin-left: -49px; transform: scaleX(1.12); transform-origin: left center;">
-      </a>
-      <h1 class="anim-3 text-6xl font-black leading-tight mb-5">
+             style="height:6rem;margin-left:-49px;transform:scaleX(1.12);transform-origin:left center;filter:brightness(0) invert(1);">
+      </div>
+      <h1 class="anim-3 font-black leading-tight mb-5" style="font-size:3.75rem;">
         Connect with<br>
-        <span class="text-amber-300">the world.</span><br>
+        <span style="color:var(--yellow);">the world.</span><br>
         Learn its languages.
       </h1>
-      <p class="anim-4 text-xl text-sky-100 mb-8 max-w-xl leading-relaxed">
-        People from every corner of the globe share their languages here. Join them - discover courses, build vocab lists, and leap across borders.
+      <p class="anim-4 mb-8 max-w-xl leading-relaxed" style="font-size:1.2rem;color:rgba(255,255,255,0.8);">
+        People from every corner of the globe share their languages here. Browse courses, build vocab lists, and leap across borders. Free forever.
       </p>
       <div class="anim-5 flex gap-3">
-        <a href="{{ url_for('signup') }}"
-           class="bg-amber-400 hover:bg-amber-300 text-gray-900 font-extrabold px-8 py-4 rounded-full text-lg shadow-xl transition-all text-center">
+        <a href="{{ url_for('signup') }}" class="btn btn-yellow" style="font-size:1.05rem;padding:0.9rem 2.25rem;">
           Start learning free
         </a>
-        <a href="{{ url_for('login') }}"
-           class="bg-white/20 hover:bg-white/30 backdrop-blur text-white font-bold px-8 py-4 rounded-full text-lg border border-white/40 transition-all text-center">
-          I already have an account
+        <a href="{{ url_for('login') }}" class="btn"
+           style="font-size:1.05rem;padding:0.9rem 2.25rem;color:#fff;border-color:rgba(255,255,255,0.35);background:rgba(255,255,255,0.12);">
+          Log in
         </a>
       </div>
     </div>
-
-    <!-- Right: illustration -->
     <div class="anim-2 flex-1 flex justify-end">
       <img src="{{ url_for('static', filename='img/hero-people.png') }}"
-           alt="People from around the world talking and learning languages"
-           class="w-full max-w-xl drop-shadow-2xl">
+           alt="People from around the world learning languages"
+           class="w-full max-w-lg drop-shadow-2xl">
     </div>
-
   </div>
 </section>
 
-<!-- LANGUAGE CARDS -->
+<!-- ── LANGUAGE CARDS ─────────────────────────────────────────────────────── -->
 <section class="max-w-7xl mx-auto px-4 py-16">
   <div class="text-center mb-10">
-    <h2 class="text-3xl font-extrabold text-gray-900 mb-2">Choose your language</h2>
-    <p class="text-gray-500">Official courses crafted by our team - more languages coming soon</p>
+    <span class="section-eyebrow" style="background:var(--purple-light);color:var(--purple);border-color:var(--purple);">Choose your language</span>
+    <h2 class="text-3xl font-extrabold mb-2">What do you want to learn?</h2>
+    <p style="color:var(--text-mid);">Official courses crafted by our team — more languages coming soon</p>
   </div>
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
     {% for lang in languages %}
     <a href="{{ url_for('courses') }}?lang={{ lang.code }}"
-       class="group relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all hover:-translate-y-1 cursor-pointer">
-      <div class="h-48 flex flex-col items-center justify-center text-white relative"
-           style="background: linear-gradient(135deg, {{ lang.color_from }}, {{ lang.color_to }});">
-        <!-- Flag emoji big -->
-        <div class="text-8xl mb-2 group-hover:scale-110 transition-transform duration-300">{{ lang.flag_emoji }}</div>
-        <div class="text-2xl font-extrabold drop-shadow">{{ lang.name }}</div>
-      </div>
-      <div class="bg-white p-5">
-        <p class="text-gray-600 text-sm leading-relaxed mb-3">{{ lang.description }}</p>
-        <div class="flex items-center justify-between">
-          <span class="text-xs text-gray-400 font-medium">
-            {{ lang.code.upper() }} · Official + Community
-          </span>
-          <span class="text-sky-600 font-bold text-sm group-hover:text-sky-800 transition-colors">
-            Explore →
-          </span>
+       class="bubble-card group"
+       style="text-decoration:none;color:inherit;">
+      <!-- Colour stripe -->
+      <div class="h-2" style="background:linear-gradient(90deg,{{ lang.color_from }},{{ lang.color_to }});"></div>
+      <div class="p-6">
+        <div class="flex items-center justify-between mb-3">
+          <span class="badge badge-purple">{{ lang.code.upper() }}</span>
+          <span class="badge badge-yellow">Official</span>
         </div>
+        <h3 class="text-2xl font-extrabold mb-2 group-hover:text-purple transition-colors">{{ lang.name }}</h3>
+        <p class="text-sm leading-relaxed mb-4" style="color:var(--text-mid);">{{ lang.description }}</p>
+        <span class="font-bold text-sm" style="color:var(--purple);">Explore courses &rarr;</span>
       </div>
     </a>
     {% endfor %}
   </div>
 </section>
 
-<!-- OFFICIAL COURSES SPOTLIGHT -->
-<section class="bg-gradient-to-r from-sky-50 to-teal-50 py-16">
+<!-- ── OFFICIAL COURSES ────────────────────────────────────────────────────── -->
+<section style="background:var(--purple-light);border-top:2px solid var(--border);border-bottom:2px solid var(--border);" class="py-16">
   <div class="max-w-7xl mx-auto px-4">
-    <div class="flex items-center justify-between mb-8">
+    <div class="flex items-end justify-between mb-8 flex-wrap gap-4">
       <div>
-        <div class="flex items-center gap-2 mb-1">
-          <span class="text-2xl">⭐</span>
-          <span class="text-xs font-bold uppercase tracking-widest text-sky-700 bg-sky-100 px-3 py-1 rounded-full">Official Courses</span>
-        </div>
-        <h2 class="text-3xl font-extrabold text-gray-900">Start with the basics</h2>
+        <span class="section-eyebrow" style="background:#fff;color:var(--purple);border-color:var(--purple);">Official</span>
+        <h2 class="text-3xl font-extrabold">Start with the basics</h2>
       </div>
-      <a href="{{ url_for('courses') }}?type=official" class="text-sky-600 hover:text-sky-800 font-semibold text-sm hidden md:block">
-        View all official courses →
+      <a href="{{ url_for('courses') }}?type=official" class="btn btn-ghost" style="font-size:0.875rem;padding:0.55rem 1.25rem;">
+        View all official courses
       </a>
     </div>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
       {% for course in official_courses %}
-      <a href="{{ url_for('course_detail', course_id=course.id) }}"
-         class="bg-white rounded-2xl shadow hover:shadow-xl transition-all hover:-translate-y-0.5 overflow-hidden group">
-        <div class="h-3 bg-gradient-to-r from-sky-500 to-teal-500"></div>
-        <div class="p-6">
-          <div class="flex items-start justify-between mb-3">
-            <span class="text-3xl">{{ course.flag_emoji }}</span>
-            <span class="bg-violet-100 text-sky-700 text-xs font-bold px-2 py-1 rounded-full">Official ✓</span>
-          </div>
-          <h3 class="font-bold text-gray-900 text-lg mb-1 group-hover:text-sky-700 transition-colors">{{ course.title }}</h3>
-          <p class="text-gray-500 text-sm mb-4 line-clamp-2">{{ course.description }}</p>
-          <div class="flex items-center justify-between text-sm text-gray-500">
-            <span>{{ course.item_count }} words</span>
-            <span class="flex items-center gap-1">
-              <span class="text-amber-400">★</span>
-              {{ course.avg_rating or '-' }}
-              <span class="text-gray-400">({{ course.rating_count }})</span>
-            </span>
-          </div>
-          <div class="mt-3 flex items-center gap-2 text-xs text-gray-400">
-            <span>👥 {{ "{:,}".format(course.enrollment_count) }} learners</span>
-            <span>·</span>
-            <span class="capitalize">{{ course.difficulty }}</span>
-          </div>
-        </div>
-      </a>
+      {% include '_course_card.html' %}
       {% endfor %}
     </div>
   </div>
 </section>
 
-<!-- POPULAR COMMUNITY COURSES -->
+<!-- ── POPULAR COURSES ─────────────────────────────────────────────────────── -->
 <section class="max-w-7xl mx-auto px-4 py-16">
-  <div class="flex items-center justify-between mb-8">
+  <div class="flex items-end justify-between mb-8 flex-wrap gap-4">
     <div>
-      <div class="flex items-center gap-2 mb-1">
-        <span class="text-2xl">🔥</span>
-        <span class="text-xs font-bold uppercase tracking-widest text-orange-600 bg-orange-100 px-3 py-1 rounded-full">Trending</span>
-      </div>
-      <h2 class="text-3xl font-extrabold text-gray-900">Popular right now</h2>
+      <span class="section-eyebrow" style="background:var(--yellow-light);color:#92400E;border-color:var(--yellow);">Trending</span>
+      <h2 class="text-3xl font-extrabold">Popular right now</h2>
     </div>
-    <a href="{{ url_for('courses') }}?sort=popular" class="text-sky-600 hover:text-sky-800 font-semibold text-sm hidden md:block">
-      See all courses →
+    <a href="{{ url_for('courses') }}?sort=popular" class="btn btn-ghost" style="font-size:0.875rem;padding:0.55rem 1.25rem;">
+      See all courses
     </a>
   </div>
-
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
     {% for course in popular_courses %}
     {% include '_course_card.html' %}
@@ -210,42 +143,37 @@
   </div>
 </section>
 
-<!-- HOW IT WORKS -->
-<section class="bg-gray-900 text-white py-20">
+<!-- ── HOW IT WORKS ───────────────────────────────────────────────────────── -->
+<section style="background:#1E293B;color:#fff;border-top:2px solid #0F172A;" class="py-20">
   <div class="max-w-7xl mx-auto px-4">
     <div class="text-center mb-12">
-      <h2 class="text-3xl font-extrabold mb-3">How LingoLeap works 🗺️</h2>
-      <p class="text-gray-400">Three simple steps to fluency</p>
+      <h2 class="text-3xl font-extrabold mb-3">How LingoLeap works</h2>
+      <p style="color:#94A3B8;">Three simple steps to fluency</p>
     </div>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-      <div class="bg-gray-800 rounded-2xl p-8 hover:bg-gray-750 transition-colors">
-        <div class="text-6xl mb-4">🔍</div>
-        <h3 class="text-xl font-bold mb-3">1. Find a course</h3>
-        <p class="text-gray-400 leading-relaxed">Browse hundreds of community-created courses or choose one of our official tracks for German, Lithuanian, or Nepali.</p>
+      {% for step in [
+        ('1', 'Find a course', 'Browse hundreds of community-created courses or choose one of our official tracks for German, Lithuanian, Nepali, Spanish and more.'),
+        ('2', 'Learn with flashcards', 'Our interactive flashcard system shows you words, tests you, and tracks your progress so you always know where you stand.'),
+        ('3', 'Create and share', 'Build your own vocabulary lists — by theme, frequency, or anything you like — and share them with the community.')
+      ] %}
+      <div class="rounded-2xl p-8" style="background:#0F172A;border:2px solid #334155;">
+        <div class="w-14 h-14 rounded-full flex items-center justify-center text-2xl font-black mx-auto mb-5"
+             style="background:var(--purple);color:#fff;border:2px solid #7C3AED;">{{ step[0] }}</div>
+        <h3 class="text-xl font-bold mb-3">{{ step[1] }}</h3>
+        <p style="color:#94A3B8;line-height:1.65;">{{ step[2] }}</p>
       </div>
-      <div class="bg-gray-800 rounded-2xl p-8">
-        <div class="text-6xl mb-4">🃏</div>
-        <h3 class="text-xl font-bold mb-3">2. Learn with flashcards</h3>
-        <p class="text-gray-400 leading-relaxed">Our interactive flashcard system shows you words, lets you test yourself, and tracks your progress over time.</p>
-      </div>
-      <div class="bg-gray-800 rounded-2xl p-8">
-        <div class="text-6xl mb-4">✍️</div>
-        <h3 class="text-xl font-bold mb-3">3. Create & share</h3>
-        <p class="text-gray-400 leading-relaxed">Build your own vocabulary lists - by theme, frequency, or anything you like - and share them with the community.</p>
-      </div>
+      {% endfor %}
     </div>
   </div>
 </section>
 
-<!-- CTA BANNER -->
-<section class="bg-sky-600 text-white py-16">
-  <div class="max-w-4xl mx-auto px-4 text-center">
-    <div class="text-5xl mb-4">🌍</div>
-    <h2 class="text-4xl font-extrabold mb-4">Ready to connect with the world?</h2>
-    <p class="text-sky-100 text-lg mb-8">Join learners from every country. No subscription, no tricks. Just great vocab lists.</p>
-    <a href="{{ url_for('signup') }}"
-       class="bg-white text-sky-700 font-extrabold px-10 py-4 rounded-full text-lg shadow-xl hover:bg-yellow-50 transition-colors inline-block">
-      Start learning for free 🌍
+<!-- ── CTA BANNER ─────────────────────────────────────────────────────────── -->
+<section style="background:var(--yellow);border-top:2px solid var(--border);border-bottom:2px solid var(--border);" class="py-16">
+  <div class="max-w-3xl mx-auto px-4 text-center">
+    <h2 class="text-4xl font-extrabold mb-4" style="color:#0F172A;">Ready to connect with the world?</h2>
+    <p class="text-lg mb-8" style="color:#44260E;">Join learners from every country. No subscription, no tricks. Just great vocabulary courses.</p>
+    <a href="{{ url_for('signup') }}" class="btn btn-primary" style="font-size:1.1rem;padding:1rem 2.5rem;">
+      Start learning for free
     </a>
   </div>
 </section>

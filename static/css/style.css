@@ -1,4 +1,156 @@
-/* Line-clamp utility */
+/* ── Design tokens ─────────────────────────────────────────────────────── */
+:root {
+  --purple:       #5B21B6;
+  --purple-mid:   #7C3AED;
+  --purple-light: #EDE9FE;
+  --yellow:       #F59E0B;
+  --yellow-light: #FEF3C7;
+  --blue:         #1D4ED8;
+  --blue-light:   #DBEAFE;
+  --green:        #059669;
+  --green-light:  #D1FAE5;
+  --border:       #1E293B;
+  --bg:           #F6F4FF;
+  --surface:      #FFFFFF;
+  --text:         #0F172A;
+  --text-mid:     #475569;
+  --text-soft:    #94A3B8;
+}
+
+/* ── Base ────────────────────────────────────────────────────────────────── */
+html { scroll-behavior: smooth; }
+body { min-height: 100vh; background: var(--bg); color: var(--text); }
+
+/* ── Typography ─────────────────────────────────────────────────────────── */
+h1, h2, h3, h4 { text-wrap: balance; }
+
+/* ── Scrollbar ──────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--purple-light); }
+::-webkit-scrollbar-thumb { background: var(--purple-mid); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--purple); }
+
+/* ── Pill buttons (filter UI) ───────────────────────────────────────────── */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.45rem 1.1rem;
+  border-radius: 999px;
+  border: 2px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 700;
+  font-size: 0.875rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, transform 0.1s;
+  text-decoration: none;
+  white-space: nowrap;
+  user-select: none;
+}
+.pill:hover {
+  background: var(--purple-light);
+  color: var(--purple);
+  transform: translateY(-1px);
+}
+.pill.active {
+  background: var(--purple);
+  color: #ffffff;
+  border-color: var(--purple);
+}
+.pill.active-yellow {
+  background: var(--yellow);
+  color: #0F172A;
+  border-color: var(--border);
+}
+.pill.active-blue {
+  background: var(--blue);
+  color: #ffffff;
+  border-color: var(--blue);
+}
+
+/* ── Bubble cards ────────────────────────────────────────────────────────── */
+.bubble-card {
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 1.25rem;
+  overflow: hidden;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  display: flex;
+  flex-direction: column;
+}
+.bubble-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 32px rgba(91, 33, 182, 0.13);
+}
+
+/* ── Buttons ─────────────────────────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.75rem;
+  border-radius: 999px;
+  border: 2px solid var(--border);
+  font-weight: 800;
+  font-size: 0.9375rem;
+  cursor: pointer;
+  transition: transform 0.12s, box-shadow 0.12s, background 0.12s;
+  text-decoration: none;
+  line-height: 1;
+}
+.btn:hover  { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,0.18); }
+.btn:active { transform: scale(0.97); box-shadow: none; }
+
+.btn-primary  { background: var(--purple); color: #fff; border-color: var(--purple); }
+.btn-yellow   { background: var(--yellow); color: #0F172A; border-color: var(--border); }
+.btn-blue     { background: var(--blue);   color: #fff; border-color: var(--blue); }
+.btn-ghost    { background: transparent;   color: var(--text); border-color: var(--border); }
+.btn-green    { background: var(--green);  color: #fff; border-color: var(--green); }
+
+.btn-primary:hover { background: var(--purple-mid); border-color: var(--purple-mid); }
+.btn-yellow:hover  { background: #FBBF24; }
+.btn-blue:hover    { background: #1E40AF; border-color: #1E40AF; }
+.btn-ghost:hover   { background: var(--purple-light); color: var(--purple); }
+
+/* ── Badge ───────────────────────────────────────────────────────────────── */
+.badge {
+  display: inline-block;
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border: 1.5px solid var(--border);
+  line-height: 1.4;
+}
+.badge-purple { background: var(--purple-light); color: var(--purple); border-color: var(--purple); }
+.badge-yellow { background: var(--yellow-light); color: #92400E; border-color: var(--yellow); }
+.badge-blue   { background: var(--blue-light);   color: var(--blue); border-color: var(--blue); }
+.badge-green  { background: var(--green-light);  color: var(--green); border-color: var(--green); }
+.badge-grey   { background: #F1F5F9; color: var(--text-mid); border-color: var(--text-soft); }
+
+/* ── Section headers ─────────────────────────────────────────────────────── */
+.section-eyebrow {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.3rem 0.9rem;
+  border-radius: 999px;
+  border: 2px solid var(--border);
+  margin-bottom: 0.75rem;
+}
+
+/* ── Focus ring ──────────────────────────────────────────────────────────── */
+input:focus, select:focus, textarea:focus, button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(91, 33, 182, 0.28);
+}
+
+/* ── Utility: line clamp ─────────────────────────────────────────────────── */
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -6,55 +158,67 @@
   overflow: hidden;
 }
 
-/* Smooth scroll */
-html { scroll-behavior: smooth; }
-
-/* Flash message fade-in */
-.flash-msg {
-  animation: fadeSlideIn 0.3s ease;
-}
+/* ── Flash message ───────────────────────────────────────────────────────── */
+.flash-msg { animation: fadeSlideIn 0.28s ease both; }
 @keyframes fadeSlideIn {
   from { opacity: 0; transform: translateY(-8px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Card hover lift */
-a.group, .hover-lift {
-  transition: transform 0.18s ease, box-shadow 0.18s ease;
-}
-
-/* Focus ring consistency */
-input:focus, select:focus, textarea:focus, button:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.25);
-}
-
-/* Flashcard cursor */
-.flashcard-scene { cursor: pointer; user-select: none; }
-
-/* Responsive iframe-friendly min heights */
-body { min-height: 100vh; }
-
-/* Custom scrollbar */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: #f1f5f9; }
-::-webkit-scrollbar-thumb { background: #c4b5fd; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #7c3aed; }
-
-/* Vocab row transition */
-.vocab-row { transition: background 0.15s; }
-.vocab-row:hover { background: #f5f3ff; }
-
-/* Star rating hover glow */
-.star-btn:hover { text-shadow: 0 0 8px #f59e0b; }
-
-/* Progress bar shine */
+/* ── Progress bar shimmer ────────────────────────────────────────────────── */
 #progress-bar {
+  background-image: linear-gradient(90deg, var(--purple) 0%, var(--blue) 50%, var(--purple) 100%);
   background-size: 200% 100%;
-  animation: shimmer 2s linear infinite;
-  background-image: linear-gradient(90deg, #7c3aed 0%, #ec4899 50%, #7c3aed 100%);
+  animation: shimmer 2.2s linear infinite;
 }
 @keyframes shimmer {
   0%   { background-position: 200% 0; }
   100% { background-position: -200% 0; }
+}
+
+/* ── Star rating ─────────────────────────────────────────────────────────── */
+.star-btn:hover { text-shadow: 0 0 8px var(--yellow); }
+
+/* ── Vocab row ────────────────────────────────────────────────────────────── */
+.vocab-row { transition: background 0.12s; }
+.vocab-row:hover { background: var(--purple-light); }
+
+/* ── Level circle ─────────────────────────────────────────────────────────── */
+.level-circle {
+  width: 2.5rem; height: 2.5rem;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 0.875rem;
+  transition: transform 0.15s;
+}
+.level-circle:hover { transform: scale(1.08); }
+.level-done    { background: var(--green);  color: #fff; border-color: var(--green); }
+.level-active  { background: var(--purple); color: #fff; border-color: var(--purple); animation: pulseLevel 2s ease-in-out infinite; }
+.level-locked  { background: #F1F5F9; color: var(--text-soft); }
+
+@keyframes pulseLevel {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(91,33,182,0.4); }
+  50%       { box-shadow: 0 0 0 6px rgba(91,33,182,0); }
+}
+
+/* ── Hero animations ─────────────────────────────────────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.anim-1 { animation: fadeUp 0.5s 0.05s ease both; }
+.anim-2 { animation: fadeIn 0.6s 0.2s  ease both; }
+.anim-3 { animation: fadeUp 0.5s 0.35s ease both; }
+.anim-4 { animation: fadeUp 0.5s 0.5s  ease both; }
+.anim-5 { animation: fadeUp 0.5s 0.6s  ease both; }
+
+/* ── Reduced motion ──────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, .anim-1, .anim-2, .anim-3, .anim-4, .anim-5,
+  #progress-bar, .level-active { animation: none !important; transition: none !important; }
 }

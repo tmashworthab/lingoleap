@@ -10,117 +10,128 @@
       theme: {
         extend: {
           colors: {
-            primary: '#0369A1',
-            'primary-dark': '#075985',
-            secondary: '#16A34A',
-            accent: '#F59E0B',
+            purple:  { DEFAULT:'#5B21B6', mid:'#7C3AED', light:'#EDE9FE', dark:'#4C1D95' },
+            yellow:  { DEFAULT:'#F59E0B', light:'#FEF3C7' },
+            blue:    { DEFAULT:'#1D4ED8', light:'#DBEAFE', dark:'#1E40AF' },
+            green:   { DEFAULT:'#059669', light:'#D1FAE5' },
+            ink:     '#0F172A',
+            border:  '#1E293B',
+            muted:   '#475569',
+            soft:    '#94A3B8',
+            bg:      '#F6F4FF',
+            surface: '#FFFFFF',
           },
           fontFamily: {
-            sans: ['Inter', 'system-ui', 'sans-serif'],
-          }
+            sans: ['Nunito', 'system-ui', 'sans-serif'],
+          },
         }
       }
     }
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
   {% block extra_head %}{% endblock %}
 </head>
-<body class="bg-gray-50 font-sans text-gray-800 min-h-screen flex flex-col">
+<body class="bg-bg font-sans text-ink min-h-screen flex flex-col">
 
-  <!-- NAVBAR -->
-  <nav class="{% block nav_class %}bg-sky-500 shadow-lg{% endblock %} sticky top-0 z-50 {% block nav_hidden %}{% endblock %}">
+  <!-- ── NAVBAR ─────────────────────────────────────────────────────────── -->
+  <nav class="{% block nav_class %}bg-purple{% endblock %} sticky top-0 z-50 {% block nav_hidden %}{% endblock %}"
+       style="border-bottom: 2px solid var(--border);">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex items-center justify-between h-16">
+
         <!-- Logo -->
-        <a href="{{ url_for('index') }}" class="flex items-center gap-2 group">
-          <span class="text-white font-extrabold text-xl tracking-tight group-hover:text-amber-300 transition-colors">
-            LingoLeap
-          </span>
+        <a href="{{ url_for('index') }}" class="flex items-center" style="line-height:0;">
+          <img src="{{ url_for('static', filename='img/logo-cropped.png') }}"
+               alt="LingoLeap"
+               style="height:2.2rem; transform:scaleX(1.15); transform-origin:left center;">
         </a>
 
-        <!-- Desktop nav links -->
-        <div class="hidden md:flex items-center gap-6">
-          <a href="{{ url_for('courses') }}" class="text-sky-100 hover:text-white font-medium transition-colors">
+        <!-- Desktop nav -->
+        <div class="hidden md:flex items-center gap-2">
+          <a href="{{ url_for('courses') }}"
+             class="pill"
+             style="background:rgba(255,255,255,0.12); color:#fff; border-color:rgba(255,255,255,0.3);">
             Browse Courses
           </a>
-          <a href="{{ url_for('leaderboard') }}" class="text-sky-100 hover:text-white font-medium transition-colors">
+          <a href="{{ url_for('leaderboard') }}"
+             class="pill"
+             style="background:rgba(255,255,255,0.12); color:#fff; border-color:rgba(255,255,255,0.3);">
             Leaderboard
           </a>
           {% if user %}
-          <a href="{{ url_for('create_course') }}" class="text-sky-100 hover:text-white font-medium transition-colors">
+          <a href="{{ url_for('create_course') }}"
+             class="pill"
+             style="background:rgba(255,255,255,0.12); color:#fff; border-color:rgba(255,255,255,0.3);">
             Create Course
           </a>
-          <a href="{{ url_for('profile') }}" class="flex items-center gap-2 text-sky-100 hover:text-white font-medium transition-colors">
+          <a href="{{ url_for('profile') }}"
+             class="flex items-center gap-2 ml-2 px-3 py-1.5 rounded-full"
+             style="background:rgba(255,255,255,0.15); border:2px solid rgba(255,255,255,0.3); color:#fff; font-weight:700; font-size:0.875rem; text-decoration:none; transition:background 0.15s;">
             {% if user.avatar_choice %}
-            <div class="w-8 h-8 rounded-full flex-shrink-0"
-                 style="background-image: url('{{ url_for('static', filename='avatars/avatar' + user.avatar_choice|string + '.png') }}'); background-size: 280%; background-position: 50% 8%;">
-            </div>
+            <div class="w-7 h-7 rounded-full flex-shrink-0"
+                 style="background-image:url('{{ url_for('static', filename='avatars/avatar' + user.avatar_choice|string + '.png') }}'); background-size:280%; background-position:50% 8%;"></div>
             {% elif user.avatar_url %}
-            <img src="{{ user.avatar_url }}" class="w-8 h-8 rounded-full object-cover" alt="{{ user.username }}">
+            <img src="{{ user.avatar_url }}" class="w-7 h-7 rounded-full object-cover" alt="{{ user.username }}">
             {% else %}
-            <span class="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold"
-                  style="background-color: {{ user.avatar_color }}">
-              {{ user.username[0].upper() }}
-            </span>
+            <span class="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
+                  style="background-color:{{ user.avatar_color }}">{{ user.username[0].upper() }}</span>
             {% endif %}
             {{ user.username }}
           </a>
           <form action="{{ url_for('logout') }}" method="post" class="inline">
-            <button type="submit" class="text-sky-200 hover:text-white text-sm transition-colors">
+            <button type="submit" class="pill"
+                    style="background:transparent; color:rgba(255,255,255,0.7); border-color:rgba(255,255,255,0.25); font-size:0.8rem;">
               Log out
             </button>
           </form>
           {% else %}
-          <a href="{{ url_for('login') }}" class="text-sky-100 hover:text-white font-medium transition-colors">
+          <a href="{{ url_for('login') }}"
+             class="pill"
+             style="background:rgba(255,255,255,0.12); color:#fff; border-color:rgba(255,255,255,0.3);">
             Log in
           </a>
-          <a href="{{ url_for('signup') }}"
-             class="bg-amber-400 hover:bg-amber-300 text-gray-900 font-bold px-4 py-2 rounded-full text-sm transition-colors shadow">
-            Sign up free
-          </a>
+          <a href="{{ url_for('signup') }}" class="pill active-yellow ml-1">Sign up free</a>
           {% endif %}
         </div>
 
-        <!-- Mobile menu button -->
-        <button id="mobile-menu-btn" class="md:hidden text-white p-2 -mr-2 touch-manipulation">
-          <svg id="menu-icon-open" class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+        <!-- Mobile hamburger -->
+        <button id="mobile-menu-btn" class="md:hidden text-white p-2 -mr-2 rounded-xl" aria-label="Menu">
+          <svg id="menu-icon-open" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16"/>
           </svg>
-          <svg id="menu-icon-close" class="w-7 h-7 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          <svg id="menu-icon-close" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
           </svg>
         </button>
       </div>
 
       <!-- Mobile menu -->
-      <div id="mobile-menu" class="hidden md:hidden pb-4">
-        <div class="flex flex-col pt-2 border-t border-sky-500">
-          <a href="{{ url_for('courses') }}" class="text-sky-100 hover:text-white font-medium py-3 px-1 border-b border-sky-600/50">Browse Courses</a>
-          <a href="{{ url_for('leaderboard') }}" class="text-sky-100 hover:text-white font-medium py-3 px-1 border-b border-sky-600/50">Leaderboard</a>
+      <div id="mobile-menu" class="hidden md:hidden pb-4 pt-2" style="border-top:1px solid rgba(255,255,255,0.15);">
+        <div class="flex flex-col gap-1">
+          <a href="{{ url_for('courses') }}" class="text-white font-bold py-2.5 px-3 rounded-xl hover:bg-white/10 transition-colors">Browse Courses</a>
+          <a href="{{ url_for('leaderboard') }}" class="text-white font-bold py-2.5 px-3 rounded-xl hover:bg-white/10 transition-colors">Leaderboard</a>
           {% if user %}
-          <a href="{{ url_for('create_course') }}" class="text-sky-100 hover:text-white font-medium py-3 px-1 border-b border-sky-600/50">Create Course</a>
-          <a href="{{ url_for('profile') }}" class="text-sky-100 hover:text-white font-medium py-3 px-1 border-b border-sky-600/50 flex items-center gap-2">
+          <a href="{{ url_for('create_course') }}" class="text-white font-bold py-2.5 px-3 rounded-xl hover:bg-white/10 transition-colors">Create Course</a>
+          <a href="{{ url_for('profile') }}" class="text-white font-bold py-2.5 px-3 rounded-xl hover:bg-white/10 transition-colors flex items-center gap-2">
             {% if user.avatar_choice %}
             <div class="w-6 h-6 rounded-full flex-shrink-0"
-                 style="background-image: url('{{ url_for('static', filename='avatars/avatar' + user.avatar_choice|string + '.png') }}'); background-size: 280%; background-position: 50% 8%;">
-            </div>
+                 style="background-image:url('{{ url_for('static', filename='avatars/avatar' + user.avatar_choice|string + '.png') }}'); background-size:280%; background-position:50% 8%;"></div>
             {% else %}
             <span class="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold"
-                  style="background-color: {{ user.avatar_color }}">{{ user.username[0].upper() }}</span>
+                  style="background-color:{{ user.avatar_color }}">{{ user.username[0].upper() }}</span>
             {% endif %}
             {{ user.username }}
           </a>
-          <form action="{{ url_for('logout') }}" method="post" class="py-3 px-1">
-            <button type="submit" class="text-sky-200 hover:text-white font-medium">Log out</button>
+          <form action="{{ url_for('logout') }}" method="post" class="px-3 pt-2">
+            <button type="submit" class="btn btn-ghost w-full"
+                    style="color:#fff; border-color:rgba(255,255,255,0.3); background:rgba(255,255,255,0.1);">Log out</button>
           </form>
           {% else %}
-          <a href="{{ url_for('login') }}" class="text-sky-100 hover:text-white font-medium py-3 px-1 border-b border-sky-600/50">Log in</a>
-          <div class="pt-3">
-            <a href="{{ url_for('signup') }}" class="block w-full bg-amber-400 hover:bg-amber-300 text-gray-900 font-extrabold px-4 py-3 rounded-xl text-center">
-              Sign up free
-            </a>
+          <a href="{{ url_for('login') }}" class="text-white font-bold py-2.5 px-3 rounded-xl hover:bg-white/10 transition-colors">Log in</a>
+          <div class="px-3 pt-2">
+            <a href="{{ url_for('signup') }}" class="btn btn-yellow block text-center w-full">Sign up free</a>
           </div>
           {% endif %}
         </div>
@@ -128,85 +139,86 @@
     </div>
   </nav>
 
-  <!-- FLASH MESSAGES -->
+  <!-- ── FLASH MESSAGES ─────────────────────────────────────────────────── -->
   {% with messages = get_flashed_messages(with_categories=true) %}
   {% if messages %}
-  <div class="max-w-7xl mx-auto w-full px-4 pt-4">
+  <div class="max-w-7xl mx-auto w-full px-4 pt-4 z-40">
     {% for category, message in messages %}
-    <div class="flash-msg flex items-center gap-3 p-4 rounded-xl mb-2 text-sm font-medium shadow
-      {% if category == 'success' %}bg-emerald-50 text-emerald-800 border border-emerald-200
-      {% elif category == 'error' %}bg-red-50 text-red-800 border border-red-200
-      {% elif category == 'warning' %}bg-amber-50 text-amber-800 border border-amber-200
-      {% else %}bg-blue-50 text-blue-800 border border-blue-200{% endif %}">
-      {{ message }}
-      <button onclick="this.parentElement.remove()" class="ml-auto opacity-60 hover:opacity-100 text-lg leading-none">&times;</button>
+    <div class="flash-msg flex items-center gap-3 p-4 rounded-2xl mb-2 text-sm font-bold"
+         style="border:2px solid var(--border); background:{% if category == 'success' %}var(--green-light){% elif category == 'error' %}#FEE2E2{% elif category == 'warning' %}var(--yellow-light){% else %}var(--blue-light){% endif %};">
+      <span class="flex-1">{{ message }}</span>
+      <button onclick="this.parentElement.remove()" class="ml-auto text-xl leading-none opacity-50 hover:opacity-100 transition-opacity">&times;</button>
     </div>
     {% endfor %}
   </div>
   {% endif %}
   {% endwith %}
 
-  <!-- MAIN CONTENT -->
+  <!-- ── MAIN ───────────────────────────────────────────────────────────── -->
   <main class="flex-1">
     {% block content %}{% endblock %}
   </main>
 
-  <!-- FOOTER -->
-  <footer class="bg-gray-900 text-gray-400 mt-16">
-    <div class="max-w-7xl mx-auto px-4 py-10">
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+  <!-- ── FOOTER ─────────────────────────────────────────────────────────── -->
+  <footer style="background:#1E293B; color:#94A3B8; border-top:2px solid #0F172A;" class="mt-16">
+    <div class="max-w-7xl mx-auto px-4 py-12">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-10">
         <div class="md:col-span-2">
-          <div class="flex items-center gap-2 mb-3">
-            <span class="text-2xl">🌍</span>
-            <span class="text-white font-extrabold text-lg">LingoLeap</span>
+          <div class="mb-3">
+            <img src="{{ url_for('static', filename='img/logo-cropped.png') }}"
+                 alt="LingoLeap"
+                 style="height:2rem; transform:scaleX(1.15); transform-origin:left center; filter:brightness(0) invert(1);">
           </div>
           <p class="text-sm leading-relaxed">
-            Learn any language the community way. Create courses, share vocabulary, and learn together. Free forever.
+            Learn any language the community way. Browse courses, build your own vocab lists, and connect with learners worldwide. Free forever.
           </p>
         </div>
         <div>
-          <h4 class="text-white font-semibold mb-3">Languages</h4>
-          <ul class="text-sm space-y-1">
-            <li><a href="{{ url_for('courses') }}?lang=de" class="hover:text-white transition-colors">🇩🇪 German</a></li>
-            <li><a href="{{ url_for('courses') }}?lang=lt" class="hover:text-white transition-colors">🇱🇹 Lithuanian</a></li>
-            <li><a href="{{ url_for('courses') }}?lang=ne" class="hover:text-white transition-colors">🇳🇵 Nepali</a></li>
+          <h4 class="font-extrabold mb-4 text-white text-xs uppercase tracking-widest">Languages</h4>
+          <ul class="text-sm space-y-2">
+            <li><a href="{{ url_for('courses') }}?lang=de" class="hover:text-white transition-colors">German</a></li>
+            <li><a href="{{ url_for('courses') }}?lang=lt" class="hover:text-white transition-colors">Lithuanian</a></li>
+            <li><a href="{{ url_for('courses') }}?lang=ne" class="hover:text-white transition-colors">Nepali</a></li>
+            <li><a href="{{ url_for('courses') }}?lang=en" class="hover:text-white transition-colors">English</a></li>
+            <li><a href="{{ url_for('courses') }}?lang=hi" class="hover:text-white transition-colors">Hindi</a></li>
+            <li><a href="{{ url_for('courses') }}?lang=es" class="hover:text-white transition-colors">Spanish</a></li>
           </ul>
         </div>
         <div>
-          <h4 class="text-white font-semibold mb-3">LingoLeap</h4>
-          <ul class="text-sm space-y-1">
+          <h4 class="font-extrabold mb-4 text-white text-xs uppercase tracking-widest">LingoLeap</h4>
+          <ul class="text-sm space-y-2">
             <li><a href="{{ url_for('courses') }}" class="hover:text-white transition-colors">Browse Courses</a></li>
             <li><a href="{{ url_for('create_course') }}" class="hover:text-white transition-colors">Create a Course</a></li>
+            <li><a href="{{ url_for('leaderboard') }}" class="hover:text-white transition-colors">Leaderboard</a></li>
             <li><a href="{{ url_for('signup') }}" class="hover:text-white transition-colors">Sign up free</a></li>
           </ul>
         </div>
       </div>
-      <div class="border-t border-gray-800 mt-8 pt-6 text-sm text-center">
-        © 2026 LingoLeap. Made with 🌍 for language lovers everywhere.
+      <div class="mt-10 pt-6 text-xs text-center" style="border-top:1px solid #334155; color:#64748B;">
+        &copy; 2026 LingoLeap &mdash; Made for language lovers everywhere.
       </div>
     </div>
   </footer>
 
   <script>
-    const menuBtn  = document.getElementById('mobile-menu-btn');
-    const menu     = document.getElementById('mobile-menu');
+    const menuBtn   = document.getElementById('mobile-menu-btn');
+    const menu      = document.getElementById('mobile-menu');
     const iconOpen  = document.getElementById('menu-icon-open');
     const iconClose = document.getElementById('menu-icon-close');
-
-    menuBtn.addEventListener('click', () => {
-      const isHidden = menu.classList.toggle('hidden');
-      iconOpen.classList.toggle('hidden', !isHidden);
-      iconClose.classList.toggle('hidden', isHidden);
-    });
-
-    // Close menu when any link inside it is tapped
-    menu.querySelectorAll('a').forEach(link => {
-      link.addEventListener('click', () => {
-        menu.classList.add('hidden');
-        iconOpen.classList.remove('hidden');
-        iconClose.classList.add('hidden');
+    if (menuBtn) {
+      menuBtn.addEventListener('click', () => {
+        const hidden = menu.classList.toggle('hidden');
+        iconOpen.classList.toggle('hidden', !hidden);
+        iconClose.classList.toggle('hidden', hidden);
       });
-    });
+      menu.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', () => {
+          menu.classList.add('hidden');
+          iconOpen.classList.remove('hidden');
+          iconClose.classList.add('hidden');
+        });
+      });
+    }
   </script>
   {% block extra_scripts %}{% endblock %}
 </body>

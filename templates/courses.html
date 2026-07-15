@@ -2,108 +2,89 @@
 {% block title %}Browse Courses - LingoLeap{% endblock %}
 
 {% block content %}
-<div class="bg-gradient-to-r from-sky-700 to-sky-800 text-white py-12">
+
+<!-- Page header -->
+<div style="background:var(--purple); border-bottom:2px solid var(--border);" class="text-white py-10">
   <div class="max-w-7xl mx-auto px-4">
-    <h1 class="text-4xl font-extrabold mb-2">Browse Courses</h1>
-    <p class="text-sky-200">Find the perfect course from our community and official catalogue</p>
+    <h1 class="text-4xl font-black mb-1">Browse Courses</h1>
+    <p style="color:rgba(255,255,255,0.75); font-size:1rem;">
+      {{ courses|length }} course{{ 's' if courses|length != 1 }} available
+    </p>
   </div>
 </div>
 
 <div class="max-w-7xl mx-auto px-4 py-8">
-  <!-- Search & Filter Bar -->
-  <form method="get" class="bg-white rounded-2xl shadow p-4 md:p-5 mb-8">
-    <!-- Search (full width) -->
-    <div class="mb-3">
-      <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Search</label>
-      <input type="text" name="q" value="{{ search }}" placeholder="Course name or keyword…"
-             class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400">
-    </div>
-    <!-- Filters grid: 2-col on mobile, 4-col on md+ -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
-      <div>
-        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Language</label>
-        <select name="lang" class="w-full border border-gray-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400 bg-white">
-          <option value="">All languages</option>
-          {% for lang in languages %}
-          <option value="{{ lang.code }}" {% if lang_filter == lang.code %}selected{% endif %}>
-            {{ lang.flag_emoji }} {{ lang.name }}
-          </option>
-          {% endfor %}
-        </select>
-      </div>
-      <div>
-        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Type</label>
-        <select name="type" class="w-full border border-gray-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400 bg-white">
-          <option value="" {% if not type_filter %}selected{% endif %}>All types</option>
-          <option value="official" {% if type_filter == 'official' %}selected{% endif %}>⭐ Official</option>
-          <option value="community" {% if type_filter == 'community' %}selected{% endif %}>🌱 Community</option>
-        </select>
-      </div>
-      <div>
-        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Difficulty</label>
-        <select name="diff" class="w-full border border-gray-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400 bg-white">
-          <option value="" {% if not diff_filter %}selected{% endif %}>Any level</option>
-          <option value="beginner" {% if diff_filter == 'beginner' %}selected{% endif %}>🌱 Beginner</option>
-          <option value="intermediate" {% if diff_filter == 'intermediate' %}selected{% endif %}>🌿 Intermediate</option>
-          <option value="advanced" {% if diff_filter == 'advanced' %}selected{% endif %}>🌳 Advanced</option>
-        </select>
-      </div>
-      <div>
-        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Sort by</label>
-        <select name="sort" class="w-full border border-gray-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400 bg-white">
-          <option value="popular" {% if sort == 'popular' %}selected{% endif %}>🔥 Most popular</option>
-          <option value="rating" {% if sort == 'rating' %}selected{% endif %}>⭐ Highest rated</option>
-          <option value="newest" {% if sort == 'newest' %}selected{% endif %}>🆕 Newest</option>
-          <option value="items" {% if sort == 'items' %}selected{% endif %}>📚 Most words</option>
-        </select>
-      </div>
-    </div>
-    <div class="flex gap-3">
-      <button type="submit"
-              class="flex-1 bg-sky-600 hover:bg-sky-700 text-white font-bold px-6 py-3 rounded-xl text-sm transition-colors">
-        Search
-      </button>
-      {% if search or lang_filter or type_filter or diff_filter %}
-      <a href="{{ url_for('courses') }}" class="flex items-center text-gray-400 hover:text-gray-600 text-sm px-4 py-3 border border-gray-200 rounded-xl">
-        Clear
+
+  <!-- ── FILTER ROWS ─────────────────────────────────────────────────────── -->
+  {# Helper macro: build URL preserving other active filters #}
+
+  {# Language pills #}
+  <div class="mb-5">
+    <div class="text-xs font-extrabold uppercase tracking-widest mb-2" style="color:var(--text-mid);">Language</div>
+    <div class="flex flex-wrap gap-2">
+      <a href="{{ url_for('courses') }}{% if diff_filter or type_filter or sort != 'popular' %}?{% if diff_filter %}diff={{ diff_filter }}&{% endif %}{% if type_filter %}type={{ type_filter }}&{% endif %}{% if sort != 'popular' %}sort={{ sort }}{% endif %}{% endif %}"
+         class="pill {% if not lang_filter %}active{% endif %}">
+        All Languages
       </a>
-      {% endif %}
+      {% for lang in languages %}
+      <a href="{{ url_for('courses') }}?lang={{ lang.code }}{% if diff_filter %}&diff={{ diff_filter }}{% endif %}{% if type_filter %}&type={{ type_filter }}{% endif %}{% if sort != 'popular' %}&sort={{ sort }}{% endif %}"
+         class="pill {% if lang_filter == lang.code %}active{% endif %}">
+        {{ lang.name }}
+      </a>
+      {% endfor %}
     </div>
-  </form>
-
-  <!-- Active filter chips -->
-  {% if search or lang_filter or type_filter or diff_filter %}
-  <div class="flex flex-wrap gap-2 mb-6">
-    <span class="text-sm text-gray-500 py-1">Filters:</span>
-    {% if search %}
-    <span class="bg-sky-100 text-sky-700 text-xs font-medium px-3 py-1 rounded-full">"{{ search }}"</span>
-    {% endif %}
-    {% if lang_filter %}
-    {% for lang in languages %}{% if lang.code == lang_filter %}
-    <span class="bg-sky-100 text-sky-700 text-xs font-medium px-3 py-1 rounded-full">{{ lang.flag_emoji }} {{ lang.name }}</span>
-    {% endif %}{% endfor %}
-    {% endif %}
-    {% if type_filter %}
-    <span class="bg-sky-100 text-sky-700 text-xs font-medium px-3 py-1 rounded-full capitalize">{{ type_filter }}</span>
-    {% endif %}
-    {% if diff_filter %}
-    <span class="bg-sky-100 text-sky-700 text-xs font-medium px-3 py-1 rounded-full capitalize">{{ diff_filter }}</span>
-    {% endif %}
   </div>
-  {% endif %}
 
-  <!-- Results count -->
-  <div class="flex items-center justify-between mb-5">
-    <p class="text-gray-500 text-sm">
-      <span class="font-semibold text-gray-800">{{ courses|length }}</span> course{{ 's' if courses|length != 1 }} found
+  {# Level pills #}
+  <div class="mb-5">
+    <div class="text-xs font-extrabold uppercase tracking-widest mb-2" style="color:var(--text-mid);">Level</div>
+    <div class="flex flex-wrap gap-2">
+      {% for label, val in [('All Levels',''), ('Beginner','beginner'), ('Intermediate','intermediate'), ('Advanced','advanced')] %}
+      <a href="{{ url_for('courses') }}{% if lang_filter or type_filter or sort != 'popular' or val %}?{% endif %}{% if lang_filter %}lang={{ lang_filter }}&{% endif %}{% if type_filter %}type={{ type_filter }}&{% endif %}{% if val %}diff={{ val }}&{% endif %}{% if sort != 'popular' %}sort={{ sort }}{% endif %}"
+         class="pill {% if diff_filter == val %}active{% elif val == '' and not diff_filter %}active{% endif %}">
+        {{ label }}
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+
+  {# Sort + Type row #}
+  <div class="mb-8 flex flex-wrap gap-6">
+    <div>
+      <div class="text-xs font-extrabold uppercase tracking-widest mb-2" style="color:var(--text-mid);">Sort by</div>
+      <div class="flex flex-wrap gap-2">
+        {% for label, val in [('Popular','popular'), ('Top Rated','rating'), ('Newest','newest'), ('Most Words','items')] %}
+        <a href="{{ url_for('courses') }}?{% if lang_filter %}lang={{ lang_filter }}&{% endif %}{% if diff_filter %}diff={{ diff_filter }}&{% endif %}{% if type_filter %}type={{ type_filter }}&{% endif %}sort={{ val }}"
+           class="pill {% if sort == val %}active{% endif %}">
+          {{ label }}
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+    <div>
+      <div class="text-xs font-extrabold uppercase tracking-widest mb-2" style="color:var(--text-mid);">Type</div>
+      <div class="flex flex-wrap gap-2">
+        {% for label, val in [('All',''), ('Official','official'), ('Community','community')] %}
+        <a href="{{ url_for('courses') }}?{% if lang_filter %}lang={{ lang_filter }}&{% endif %}{% if diff_filter %}diff={{ diff_filter }}&{% endif %}{% if val %}type={{ val }}&{% endif %}sort={{ sort }}"
+           class="pill {% if type_filter == val %}active{% elif val == '' and not type_filter %}active{% endif %}">
+          {{ label }}
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Top right: create button -->
+  <div class="flex items-center justify-between mb-6">
+    <p class="font-bold" style="color:var(--text-mid); font-size:0.9rem;">
+      Showing <span style="color:var(--text);">{{ courses|length }}</span> course{{ 's' if courses|length != 1 }}
     </p>
-    <a href="{{ url_for('create_course') }}"
-       class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-4 py-2 rounded-xl text-sm transition-colors flex items-center gap-2">
-      <span>＋</span> Create a course
+    <a href="{{ url_for('create_course') }}" class="btn btn-green" style="font-size:0.875rem; padding:0.55rem 1.25rem;">
+      + Create a course
     </a>
   </div>
 
-  <!-- Course Grid -->
+  <!-- ── COURSE GRID ────────────────────────────────────────────────────── -->
   {% if courses %}
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
     {% for course in courses %}
@@ -111,15 +92,14 @@
     {% endfor %}
   </div>
   {% else %}
-  <div class="text-center py-20 text-gray-400">
-    <div class="text-6xl mb-4">🔍</div>
-    <h3 class="text-xl font-semibold text-gray-600 mb-2">No courses found</h3>
-    <p class="mb-6">Try adjusting your filters or be the first to create one!</p>
-    <a href="{{ url_for('create_course') }}"
-       class="bg-sky-600 text-white font-bold px-6 py-3 rounded-full hover:bg-sky-700 transition-colors">
-      Create a course
-    </a>
+  <div class="text-center py-20 bubble-card" style="padding:4rem 2rem;">
+    <div class="text-5xl font-black mb-4" style="color:var(--purple);">?</div>
+    <h3 class="text-xl font-extrabold mb-2">No courses found</h3>
+    <p class="mb-6" style="color:var(--text-mid);">Try a different filter or be the first to create one!</p>
+    <a href="{{ url_for('courses') }}" class="btn btn-ghost mr-3">Clear filters</a>
+    <a href="{{ url_for('create_course') }}" class="btn btn-primary">Create a course</a>
   </div>
   {% endif %}
+
 </div>
 {% endblock %}
